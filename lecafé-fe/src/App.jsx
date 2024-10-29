@@ -4,6 +4,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Menu from "./pages/Menu";
 import SendEmail from "./pages/SendEmail";
+import ForgotPassword from "./pages/ForgotPassword";
+import Order from "./pages/Order";
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/menu" element={<Menu />} />
         <Route path="/send-email" element={<SendEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="order" element={<Order />} />
       </Routes>
     </Router>
   );

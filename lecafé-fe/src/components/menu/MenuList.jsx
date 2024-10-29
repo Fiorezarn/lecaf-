@@ -21,29 +21,121 @@ import {
 import { Button } from "../ui/button";
 import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
-import { Toaster } from "@/components/ui/sonner";
+import { Input } from "../ui/input";
 
 function MenuList() {
   const dispatch = useDispatch();
-  const { menu, loading, error } = useSelector((state) => state.menu);
+  const { menu, error } = useSelector((state) => state.menu);
+  const { cookie } = useSelector((state) => state.auth);
+  const { message, errorCart } = useSelector((state) => state.cart);
   const BASE_URL = import.meta.env.VITE_BASE_URL_BE;
+
+  useEffect(() => {
+    dispatch({ type: "auth/getCookie" });
+  }, [dispatch]);
 
   useEffect(() => {
     dispatch({ type: "menu/getAllMenu" });
   }, [dispatch]);
 
+  useEffect(() => {
+    if (message) {
+      if (errorCart) {
+        toast.error(message);
+        dispatch({ type: "cart/setMessage" });
+      } else {
+        toast.success(message);
+        dispatch({ type: "cart/setMessage" });
+      }
+    }
+  }, [message]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const quantity = e.target.quantity.value;
+    const userId = cookie?.us_id;
+    const menuId = e.target.menuId.value;
+
+    dispatch({
+      type: "cart/addCart",
+      payload: { userId, menuId, quantity },
+    });
+    e.target.reset();
+  };
+
   const clickDetail = (id) => {
     dispatch({ type: "menu/getMenuById", payload: id });
   };
-  console.log(error);
 
   if (error) {
     toast.error(error);
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <Pagination className="mb-4">
+    <div className="flex flex-col">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {menu?.map((item) => (
+          <Card
+            key={item.mn_id}
+            className="shadow-md border border-gray-200 rounded-lg overflow-hidden bg-earth4"
+          >
+            <div
+              className="cursor-pointer"
+              onClick={() => clickDetail(item.mn_id)}
+            >
+              <CardHeader
+                className="h-48 overflow-hidden"
+                onClick={() => clickDetail(item.mn_id)}
+              >
+                <img
+                  className="w-full h-full object-cover"
+                  src={`${BASE_URL}/${item.mn_image}`}
+                  alt={item.mn_name}
+                />
+              </CardHeader>
+              <CardContent>
+                <CardTitle className="text-lg font-semibold">
+                  {item.mn_name}
+                </CardTitle>
+                <CardDescription className="text-sm text-gray-600">
+                  {item.mn_category}
+                </CardDescription>
+                <p className="font-semibold text-primary mt-2">
+                  Rp {item.mn_price}
+                </p>
+              </CardContent>
+            </div>
+            <CardFooter className="flex justify-between items-center">
+              <form
+                className="flex w-[50%] space-x-2 mr-6"
+                onSubmit={handleSubmit}
+              >
+                <Input
+                  className="hidden"
+                  value={item.mn_id}
+                  id="menuId"
+                  type="number"
+                  min="1"
+                  required
+                ></Input>
+                <Input
+                  className=""
+                  id="quantity"
+                  type="number"
+                  min="1"
+                  max="10"
+                  required
+                ></Input>
+                <Button className=" bg-earth" type="submit">
+                  <ShoppingCart />
+                </Button>
+              </form>
+              <Button className="bg-earth">Order Now</Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+      <Pagination className="mt-6">
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious href="#" />
@@ -67,42 +159,6 @@ function MenuList() {
           </PaginationItem>
         </PaginationContent>
       </Pagination>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        <Toaster richColors position="top-right" />
-        {menu?.map((item) => (
-          <Card
-            onClick={() => clickDetail(item.mn_id)}
-            key={item.mn_id}
-            className="shadow-md border border-gray-200 rounded-lg overflow-hidden bg-earth4 cursor-pointer"
-          >
-            <CardHeader className="h-48 overflow-hidden">
-              <img
-                className="w-full h-full object-cover"
-                src={`${BASE_URL}/${item.mn_image}`}
-                alt={item.mn_name}
-              />
-            </CardHeader>
-            <CardContent>
-              <CardTitle className="text-lg font-semibold">
-                {item.mn_name}
-              </CardTitle>
-              <CardDescription className="text-sm text-gray-600">
-                {item.mn_desc}
-              </CardDescription>
-              <p className="font-semibold text-primary mt-2">
-                Rp {item.mn_price}
-              </p>
-            </CardContent>
-            <CardFooter className="flex justify-between items-center">
-              <Button className="flex items-center space-x-2 bg-earth">
-                <ShoppingCart />
-              </Button>
-              <Button className="bg-earth">Order Now</Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
     </div>
   );
 }

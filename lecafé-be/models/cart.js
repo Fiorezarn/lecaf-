@@ -26,6 +26,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      cr_quantity: {
+        type: DataTypes.INTEGER,
+      },
     },
     {
       sequelize,

@@ -48,6 +48,9 @@ export const authSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    setLoading: (state, action) => {
+      state.loading = action.payload;
+    },
   },
 });
 
@@ -61,6 +64,7 @@ export const {
   getCookieRequest,
   getCookieSuccess,
   getCookieFailure,
+  setLoading,
 } = authSlice.actions;
 
 export default authSlice.reducer;

@@ -2,6 +2,7 @@ import { put, takeLatest } from "redux-saga/effects";
 import {
   registerSuccess,
   registerFailure,
+  setLoading,
   loginSuccess,
   loginFailure,
   getCookieSuccess,
@@ -12,6 +13,7 @@ import Cookies from "js-cookie";
 
 function* register(action) {
   try {
+    yield put(setLoading(true));
     const response = yield fetchRegister(action.payload);
     yield put(registerSuccess(response));
   } catch (error) {
@@ -21,6 +23,7 @@ function* register(action) {
 
 function* login(action) {
   try {
+    yield put(setLoading(true));
     const response = yield fetchlogin(action.payload);
     yield put(loginSuccess(response));
   } catch (error) {
@@ -32,8 +35,6 @@ function* getCookie() {
   try {
     const cookie = yield Cookies.get("user");
     const userData = JSON.parse(cookie);
-    console.log(userData);
-
     yield put(getCookieSuccess(userData));
   } catch (error) {
     yield put(getCookieFailure(error.message));
@@ -42,6 +43,6 @@ function* getCookie() {
 
 export default function* authSaga() {
   yield takeLatest("auth/registerRequest", register);
-  yield takeLatest("auth/loginReguest", login);
+  yield takeLatest("auth/loginRequest", login);
   yield takeLatest("auth/getCookie", getCookie);
 }

@@ -23,12 +23,13 @@ const errorServerResponse = (res, message, code = 500) => {
   });
 };
 
-const errorClientResponse = (res, message, code = 400) => {
-  return res.status(code).send({
+const errorClientResponse = (res, message, code = 400, customData = {}) => {
+  let response = {
     status: "error",
     code,
     message,
-  });
+  };
+  return res.status(code).send({ ...response, ...customData });
 };
 
 module.exports = {

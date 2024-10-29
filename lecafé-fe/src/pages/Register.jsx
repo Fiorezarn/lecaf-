@@ -8,7 +8,6 @@ import firebaseConfig from "../../firebaseconfig.json";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { Toaster } from "@/components/ui/sonner";
 import { useNavigate } from "react-router-dom";
 
 function Register() {
@@ -17,7 +16,7 @@ function Register() {
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const { user, loading } = useSelector((state) => state.auth);
   const handleSubmit = (e) => {
     e.preventDefault();
     const fullname = e.target.fullname.value;
@@ -111,8 +110,12 @@ function Register() {
             placeholder="Password"
           />
           <div className="text-center md:text-left">
-            <Button className=" mt-4 bg-[#4B332B]" type="submit">
-              Register
+            <Button
+              className=" mt-4 bg-[#4B332B]"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Loading..." : "Register"}
             </Button>
           </div>
         </form>
@@ -128,7 +131,6 @@ function Register() {
           </a>
         </div>
       </div>
-      <Toaster richColors closeButton position="top-right" />
     </div>
   );
 }

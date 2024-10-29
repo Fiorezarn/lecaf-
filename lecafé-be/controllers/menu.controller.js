@@ -5,7 +5,6 @@ const {
   errorServerResponse,
   errorClientResponse,
 } = require("../helpers/response.helper");
-const { where } = require("sequelize");
 
 const getAllMenu = async (req, res) => {
   try {

@@ -1,13 +1,16 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
+const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const port = process.env.PORT || 3000;
 const baseUrl = process.env.BASE_URL;
 const authRouter = require("./routes/auth.route");
 const menuRouter = require("./routes/menu.route");
+const cartRouter = require("./routes/cart.route");
 
+app.use(cookieParser());
 app.use(express.static("public"));
 app.use(bodyParser.json());
 app.use(
@@ -26,3 +29,4 @@ app.get("/", (req, res) => {
 
 app.use("/auth", authRouter);
 app.use("/menu", menuRouter);
+app.use("/cart", cartRouter);

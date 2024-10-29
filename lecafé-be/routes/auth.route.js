@@ -3,10 +3,11 @@ const router = express.Router();
 const {
   Register,
   Login,
-  sendEmailResetPassword,
-  resetPassword,
+  sendEmailForgotPassword,
+  forgotPassword,
   sendEmailVerificationManual,
   loginWithGoogle,
+  logout,
 } = require("../controllers/auth.controller");
 const { verifyEmail } = require("../helpers/token.helper");
 const {
@@ -17,9 +18,10 @@ const {
 router.get("/verify-email", verifyEmail);
 router.post("/register", bodyValidation, checkDuplicate, Register);
 router.post("/login", Login);
-router.post("/send-reset-password", sendEmailResetPassword);
+router.post("/send-forgot-password", sendEmailForgotPassword);
 router.post("/send-email", sendEmailVerificationManual);
-router.put("/reset-password", resetPassword);
+router.put("/forgot-password", forgotPassword);
 router.post("/google", loginWithGoogle);
+router.get("/logout", logout);
 
 module.exports = router;

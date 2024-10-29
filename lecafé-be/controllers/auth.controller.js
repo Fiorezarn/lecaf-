@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { Users } = require("../models");
+const { User } = require("../models");
 const bcrypt = require("bcrypt");
 const { generateToken, sendEmail } = require("../helpers/token.helper");
 const admin = require("./firebase");
@@ -13,7 +13,7 @@ const { Op } = require("sequelize");
 const Register = async (req, res) => {
   try {
     const { username, fullname, email, phonenumber, password } = req.body;
-    const newUser = await Users.create({
+    const newUser = await User.create({
       us_username: username,
       us_fullname: fullname,
       us_email: email,
@@ -47,7 +47,7 @@ const Register = async (req, res) => {
 const Login = async (req, res) => {
   try {
     const { input, password } = req.body;
-    const users = await Users.findOne({
+    const users = await User.findOne({
       attributes: [
         "us_username",
         "us_email",
@@ -59,20 +59,24 @@ const Login = async (req, res) => {
       where: { [Op.or]: [{ us_username: input }, { us_email: input }] },
     });
     if (!users) {
-      return errorClientResponse(res, "User not found", 404);
-    }
-
-    if (!users.us_active) {
-      return res.status(400).send({
-        status: "failed",
-        code: 401,
-        message: "Please Verify Your Email!",
-      });
+      return errorClientResponse(
+        res,
+        "User not found, please register first",
+        404
+      );
     }
 
     const validPassword = await bcrypt.compare(password, users.us_password);
     if (!validPassword) {
-      return errorClientResponse(res, "Invalid Password", 401);
+      return errorClientResponse(res, "Invalid Password", 401, {
+        type: "invalidpassword",
+      });
+    }
+
+    if (!users.us_active) {
+      return errorClientResponse(res, "Please Verify Your Email!", 401, {
+        type: "notverify",
+      });
     }
 
     const loginToken = generateToken(
@@ -109,20 +113,27 @@ const loginWithGoogle = async (req, res) => {
       0,
       decodedToken.email.indexOf("@")
     );
-    let user = await Users.findOne({
-      where: { us_email: decodedToken.email },
+    let user = null;
+    let users = await User.findAll({
+      where: {
+        [Op.or]: [
+          { us_email: decodedToken.email },
+          { us_username: googleUsername },
+        ],
+      },
     });
 
-    let username = await Users.findOne({
-      where: { us_username: googleUsername },
+    users.map((data) => {
+      if (data.us_username === googleUsername) {
+        googleUsername = "USER" + Math.floor(Math.random() * 1000);
+      }
+      if (data.us_email === decodedToken.email) {
+        user = data;
+      }
     });
-
-    if (username && googleUsername === username?.us_username) {
-      googleUsername = "USER" + Math.floor(Math.random() * 1000);
-    }
 
     if (!user) {
-      user = await Users.create({
+      user = await User.create({
         us_email: decodedToken.email,
         us_fullname: decodedToken.name,
         us_username: googleUsername,
@@ -160,17 +171,17 @@ const loginWithGoogle = async (req, res) => {
   }
 };
 
-const sendEmailResetPassword = async (req, res) => {
+const sendEmailForgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-    const user = await Users.findOne({
+    const user = await User.findOne({
       where: { us_email: email },
     });
     if (!user) {
       return res.status(400).send({
         status: "failed",
         code: 400,
-        message: "User not found",
+        message: `User with email ${email} not found`,
       });
     }
 
@@ -188,7 +199,7 @@ const sendEmailResetPassword = async (req, res) => {
       "Reset password Le Café",
       "Please click the link to reset your password",
       verifyToken,
-      `${process.env.BASE_URL_FRONTEND}/reset-password`
+      `${process.env.BASE_URL_FRONTEND}/forgot-password`
     );
     return successResponse(res, "Link have been send to your email!");
   } catch (error) {
@@ -199,14 +210,14 @@ const sendEmailResetPassword = async (req, res) => {
 const sendEmailVerificationManual = async (req, res) => {
   try {
     const { email } = req.body;
-    const user = await Users.findOne({
+    const user = await User.findOne({
       where: { us_email: email },
     });
     if (!user) {
       return res.status(400).send({
         status: "failed",
         code: 400,
-        message: "User not found",
+        message: `User with email ${email} not found`,
       });
     }
 
@@ -233,13 +244,14 @@ const sendEmailVerificationManual = async (req, res) => {
   }
 };
 
-const resetPassword = async (req, res) => {
+const forgotPassword = async (req, res) => {
   try {
     const { password } = req.body;
     const { token } = req.query;
+    console.log(token);
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    await Users.update(
+    await User.update(
       {
         us_password: bcrypt.hashSync(password, 10),
         updatedAt: new Date(),
@@ -248,7 +260,22 @@ const resetPassword = async (req, res) => {
         where: { us_id: decoded.us_id },
       }
     );
-    return successResponse(res, "Link have been send to your email!");
+    return successResponse(res, "Password changed!");
+  } catch (error) {
+    return errorServerResponse(res, error.message);
+  }
+};
+
+const logout = async (req, res) => {
+  try {
+    res.clearCookie("user", {
+      httpOnly: false,
+    });
+
+    return res.status(200).send({
+      status: "succes",
+      code: 200,
+    });
   } catch (error) {
     return errorServerResponse(res, error.message);
   }
@@ -257,8 +284,9 @@ const resetPassword = async (req, res) => {
 module.exports = {
   Register,
   Login,
-  sendEmailResetPassword,
+  logout,
+  sendEmailForgotPassword,
   sendEmailVerificationManual,
-  resetPassword,
+  forgotPassword,
   loginWithGoogle,
 };

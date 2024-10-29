@@ -39,12 +39,12 @@ function Home() {
   return (
     <>
       <section
-        className="relative h-[70vh] w-full bg-cover bg-center"
+        className="relative h-[84vh] w-full bg-cover bg-center bg-fixed"
         style={{
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${heroImage})`,
         }}
       >
-        <Navbar />
+        <Navbar navbarClass="w-full py-6 px-24 flex justify-between items-center" />
         <div className="absolute top-56 left-24">
           <h1 className="font-semibold text-5xl text-white">
             Welcome to Le Café Billy!

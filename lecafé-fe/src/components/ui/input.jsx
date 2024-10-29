@@ -11,7 +11,7 @@ const Input = React.forwardRef(
     };
 
     return (
-      <div className='relative'>
+      <div className="relative">
         <input
           type={isPassword && showPassword ? "text" : type}
           className={cn(
@@ -23,14 +23,14 @@ const Input = React.forwardRef(
         />
         {isPassword && (
           <button
-            type='button'
-            className='absolute inset-y-0 right-0 flex items-center pr-3'
+            type="button"
+            className="absolute inset-y-0 right-0 flex items-center pr-3"
             onClick={togglePasswordVisibility}
           >
             {showPassword ? (
-              <EyeOff className='h-4 w-4' />
+              <EyeOff className="h-4 w-4" />
             ) : (
-              <Eye className='h-4 w-4' />
+              <Eye className="h-4 w-4" />
             )}
           </button>
         )}

@@ -1,11 +1,4 @@
 import { ShoppingBasket } from "lucide-react";
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarTrigger,
-} from "../ui/menubar";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,17 +10,33 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
 
-function Navbar() {
+function Navbar({ navbarClass }) {
   const { cookie } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const BASE_URL = import.meta.env.VITE_BASE_URL_BE;
+
   useEffect(() => {
     dispatch({ type: "auth/getCookie" });
   }, [dispatch]);
-  console.log(cookie);
 
+  const handleLogout = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/auth/logout`, {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
+      navigate(0);
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  };
   return (
-    <nav className="w-full py-6 px-24 flex justify-between items-center">
+    <nav className={navbarClass}>
       <h1 className="text-white text-3xl">Le Café</h1>
       <div>
         <ul className="flex gap-6 text-2xl text-white">
@@ -38,15 +47,7 @@ function Navbar() {
             <a href="/menu">Menu</a>
           </li>
           <li>
-            <Menubar className="">
-              <MenubarMenu className="">
-                <MenubarTrigger className="">Order</MenubarTrigger>
-                <MenubarContent>
-                  <MenubarItem>My Order</MenubarItem>
-                  <MenubarItem>My Order History</MenubarItem>
-                </MenubarContent>
-              </MenubarMenu>
-            </Menubar>
+            <a href="/order">Order</a>
           </li>
         </ul>
       </div>
@@ -65,12 +66,12 @@ function Navbar() {
                   </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuLabel>{cookie?.us_username}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
-                  <DropdownMenuItem>Billing</DropdownMenuItem>
-                  <DropdownMenuItem>Team</DropdownMenuItem>
-                  <DropdownMenuItem>Subscription</DropdownMenuItem>
+                  <DropdownMenuItem>Order</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Logout
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (

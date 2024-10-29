@@ -8,7 +8,6 @@ import firebaseConfig from "../../firebaseconfig.json";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 
@@ -18,23 +17,28 @@ function Login() {
   const provider = new GoogleAuthProvider();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
-
+  const { user, loading } = useSelector((state) => state.auth);
   const handlelogin = async (e) => {
     e.preventDefault();
     const input = e.target.email.value;
     const password = e.target.password.value;
 
     dispatch({
-      type: "auth/loginReguest",
+      type: "auth/loginRequest",
       payload: { input, password },
     });
   };
 
   useEffect(() => {
     if (user) {
-      const code = user?.code;
-      if (code !== 200) {
+      if (user.type === "notverify") {
+        toast.error(user?.message, {
+          action: {
+            label: "Click Here",
+            onClick: () => navigate("/send-email?action=verify-email"),
+          },
+        });
+      } else if (user.type === "invalidpassword" || user?.code !== 200) {
         toast.error(user?.message);
       } else {
         navigate("/");
@@ -60,14 +64,12 @@ function Login() {
       });
       navigate("/");
     } catch (error) {
-      console.log(error);
-
       console.error("Login Failed:", error);
     }
   };
   return (
     <div className="flex h-screen justify-between items-center">
-      <img className="w-1/2 h-full" src={heroImage} alt="" />
+      <img className="w-1/2 h-full" src={heroImage} alt="hero" />
       <div className="w-1/2 p-10">
         <Button className="w-full mt-4 bg-[#4B332B]" onClick={loginWithGoogle}>
           Login with google <FcGoogle />
@@ -82,7 +84,8 @@ function Login() {
             id="email"
             className="text-sm w-full px-4 py-2 border border-solid border-gray-300 rounded"
             type="text"
-            placeholder="Email Address"
+            placeholder="Email or Username"
+            required
           />
           <Input
             id="password"
@@ -90,6 +93,7 @@ function Login() {
             isPassword
             type="password"
             placeholder="Password"
+            required
           />
           <div className="mt-4 flex justify-between font-semibold text-sm">
             <label className="flex text-slate-500 hover:text-slate-600 cursor-pointer">
@@ -98,14 +102,18 @@ function Login() {
             </label>
             <a
               className="text-[#C0AF90] hover:underline hover:underline-offset-4"
-              href="/send-email"
+              href="/send-email?action=forgot-password"
             >
               Forgot Password?
             </a>
           </div>
           <div className="text-center md:text-left">
-            <Button type="submit" className=" mt-4 bg-[#4B332B]">
-              Login
+            <Button
+              type="submit"
+              className=" mt-4 bg-[#4B332B]"
+              disabled={loading}
+            >
+              {loading ? "Loading..." : "Login"}
             </Button>
           </div>
         </form>
@@ -120,7 +128,6 @@ function Login() {
             <MoveLeft /> Back
           </a>
         </div>
-        <Toaster richColors position="top-right" />
       </div>
     </div>
   );

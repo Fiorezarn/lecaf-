@@ -12,9 +12,9 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "od_or_id",
         as: "OrderDetail",
       });
-      models.Order.belongsTo(models.Users, {
+      models.Order.belongsTo(models.User, {
         foreignKey: "or_id_user",
-        as: "Users",
+        as: "User",
       });
     }
   }
