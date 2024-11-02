@@ -1,10 +1,9 @@
 const { errorServerResponse } = require("./response.helper");
 const axios = require("axios");
-const geocodeUrl = process.env.GEOCODE_URL;
 
-const generateLatLongFromAddres = async (address) => {
+const generateLatLongFromAddress = async (address) => {
   try {
-    const response = await axios.get(`${geocodeUrl}`, {
+    const response = await axios.get(`${process.env.GEOCODE_URL}`, {
       params: {
         f: "json",
         SingleLine: address,
@@ -21,11 +20,39 @@ const generateLatLongFromAddres = async (address) => {
         address: response.data.candidates[0].address,
       };
     } else {
-      res.status(404).json({ message: "Alamat tidak ditemukan." });
+      return res.status(404).json({ message: "Alamat tidak ditemukan." });
     }
   } catch (error) {
     return errorServerResponse(res, error.message);
   }
 };
 
-module.exports = { generateLatLongFromAddres };
+const generatePolyline = async (data) => {
+  try {
+    const promises = [];
+    const coordinates = [];
+    data.map((d) => {
+      promises.push(
+        (async () => {
+          const response = await axios.get(
+            `${process.env.ROUTER_OSRM_URL}/${Number(
+              d["originLongitude"]
+            )},${Number(d["originLatitude"])};${Number(
+              d["destinationLongitude"]
+            )},${Number(
+              d["destinationLatitude"]
+            )}?overview=full&geometries=geojson`
+          );
+          const coordinate = response.data.routes[0].geometry.coordinates;
+          coordinates.push(coordinate);
+        })()
+      );
+    });
+    await Promise.all(promises);
+    return coordinates;
+  } catch (error) {
+    throw new Error();
+  }
+};
+
+module.exports = { generateLatLongFromAddress, generatePolyline };

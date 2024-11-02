@@ -5,12 +5,15 @@ const {
   errorServerResponse,
   errorClientResponse,
 } = require("../helpers/response.helper");
-const { generateLatLongFromAddres } = require("../helpers/maps.helper");
+const {
+  generateLatLongFromAddress,
+  generatePolyline,
+} = require("../helpers/maps.helper");
 
 const createOrder = async (req, res) => {
   try {
     const { userId, site, typeOrder, totalPrice, menuJson } = req.body;
-    const maps = await generateLatLongFromAddres(site);
+    const maps = await generateLatLongFromAddress(site);
     const order = await Order.create({
       or_us_id: userId,
       or_site: site,
@@ -70,7 +73,13 @@ const getOrderByUserId = async (req, res) => {
     return successResponseData(
       res,
       `Success get all order with user with id ${id}`,
-      order,
+      {
+        order,
+        origins: {
+          latitude: process.env.STORE_LATITUDE,
+          longitude: process.env.STORE_LONGITUDE,
+        },
+      },
       200
     );
   } catch (error) {

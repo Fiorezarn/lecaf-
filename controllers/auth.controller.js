@@ -10,6 +10,7 @@ const {
   errorClientResponse,
 } = require("../helpers/response.helper");
 const { Op } = require("sequelize");
+
 const Register = async (req, res) => {
   try {
     const { username, fullname, email, phonenumber, password } = req.body;
@@ -92,6 +93,7 @@ const Login = async (req, res) => {
       expires: new Date(Number(new Date()) + 24 * 60 * 60 * 1000),
       httpOnly: false,
     };
+
     return res.cookie("user", JSON.stringify(users), options).status(200).send({
       status: "succes",
       code: 200,
@@ -151,7 +153,7 @@ const loginWithGoogle = async (req, res) => {
       user.us_id,
       user.us_email,
       user.us_role,
-      "LOGINGOOGLE",
+      "LOGIN GOOGLE",
       process.env.JWT_EXPIRES_IN
     );
 
@@ -248,7 +250,6 @@ const forgotPassword = async (req, res) => {
   try {
     const { password } = req.body;
     const { token } = req.query;
-    console.log(token);
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     await User.update(

@@ -69,7 +69,6 @@ const deleteCart = async (req, res) => {
     });
     return successResponse(res, "Cart successfully deleted!");
   } catch (error) {
-    console.log(error);
     return errorServerResponse(res, error.message);
   }
 };

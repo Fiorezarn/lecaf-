@@ -37,7 +37,7 @@ module.exports = {
         allowNull: false,
       },
       or_status_payment: {
-        type: Sequelize.ENUM("Pending", "Succed", "Failed"),
+        type: Sequelize.ENUM("Pending", "Success", "Failed"),
         defaultValue: "Pending",
       },
       or_status_shipping: {

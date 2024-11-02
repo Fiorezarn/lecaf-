@@ -5,9 +5,9 @@ const path = require("path");
 const nodemailer = require("nodemailer");
 const handlebars = require("handlebars");
 
-const generateToken = (id, email, name, role, expiresIn) => {
+const generateToken = (id, email, role, name, expiresIn) => {
   const token = jwt.sign(
-    { us_id: id, us_email: email, name: name, role: role },
+    { us_id: id, us_email: email, us_role: role, name: name },
     process.env.JWT_SECRET,
     {
       expiresIn: expiresIn,
