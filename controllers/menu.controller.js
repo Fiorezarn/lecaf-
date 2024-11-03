@@ -63,7 +63,7 @@ const createMenu = async (req, res) => {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    return successResponseData(res, "Success create menu", menu, 200);
+    return successResponseData(res, "Success create menu", menu, 201);
   } catch (error) {
     return errorServerResponse(res, error.message);
   }
@@ -81,13 +81,21 @@ const updateMenu = async (req, res) => {
       const result = await uploadImage(req?.file);
       menu.mn_image = result.secure_url;
     }
-    menu.mn_name = name;
-    menu.mn_price = Number(price);
-    menu.mn_desc = description;
-    menu.mn_category = category;
-    menu.updatedAt = new Date();
-    await menu.save();
-    return successResponseData(res, "Success update menu", menu, 200);
+
+    await Menu.update(
+      {
+        mn_name: name,
+        mn_price: Number(price),
+        mn_desc: description,
+        mn_image: menu.mn_image,
+        mn_category: category,
+        updatedAt: new Date(),
+      },
+      {
+        where: { mn_id: id },
+      }
+    );
+    return successResponse(res, "Success update menu");
   } catch (error) {
     return errorServerResponse(res, error.message);
   }
