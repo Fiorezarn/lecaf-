@@ -14,7 +14,7 @@ module.exports = {
           us_phonenumber: "085282810339",
           us_password: bcrypt.hashSync("fiorezarn1902", 10),
           us_role: "ADMIN",
-          is_active: 1,
+          us_active: 1,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
