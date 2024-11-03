@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const { User } = require("../models");
 const bcrypt = require("bcrypt");
 const { generateToken, sendEmail } = require("../helpers/token.helper");
-const admin = require("./firebase");
+const admin = require("../utils/firebase");
 const {
   successResponseData,
   successResponse,

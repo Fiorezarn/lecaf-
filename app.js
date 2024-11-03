@@ -11,6 +11,7 @@ const menuRouter = require("./routes/menu.route");
 const cartRouter = require("./routes/cart.route");
 const orderRouter = require("./routes/order.route");
 const mapRouter = require("./routes/maps.route");
+const userRouter = require("./routes/user.route");
 
 app.use(cookieParser());
 app.use(express.static("public"));
@@ -34,3 +35,4 @@ app.use("/menu", menuRouter);
 app.use("/cart", cartRouter);
 app.use("/order", orderRouter);
 app.use("/maps", mapRouter);
+app.use("/user", userRouter);

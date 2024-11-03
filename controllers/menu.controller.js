@@ -10,7 +10,9 @@ const { uploadImage } = require("../service/cloudinary.service");
 
 const getAllMenu = async (req, res) => {
   try {
-    const menus = await Menu.findAll();
+    const menus = await Menu.findAll({
+      where: { is_deleted: 0 },
+    });
     return successResponseData(res, "Success get all data!", menus, 200);
   } catch (error) {
     return errorServerResponse(res, error.message);
@@ -101,4 +103,31 @@ const updateMenu = async (req, res) => {
   }
 };
 
-module.exports = { getAllMenu, getMenuById, createMenu, updateMenu };
+const deleteMenu = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const menu = await findMenuById(id);
+    if (!menu) {
+      return errorClientResponse(res, `Menu with id ${id} not found!`);
+    }
+    await Menu.update(
+      {
+        is_deleted: 1,
+      },
+      {
+        where: { mn_id: id },
+      }
+    );
+    return successResponse(res, "Success delete menu");
+  } catch (error) {
+    return errorServerResponse(res, error.message);
+  }
+};
+
+module.exports = {
+  getAllMenu,
+  getMenuById,
+  createMenu,
+  updateMenu,
+  deleteMenu,
+};
