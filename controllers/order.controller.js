@@ -32,9 +32,11 @@ const createOrder = async (req, res) => {
       });
     }
     const data = { order, orderDetail };
-    successResponseData(res, "Order created successfully", data);
+    return successResponseData(res, "Order created successfully", data);
   } catch (error) {
-    errorServerResponse(res, error.message);
+    console.log(error);
+
+    return errorServerResponse(res, error.message);
   }
 };
 

@@ -20,10 +20,10 @@ const generateLatLongFromAddress = async (address) => {
         address: response.data.candidates[0].address,
       };
     } else {
-      return res.status(404).json({ message: "Alamat tidak ditemukan." });
+      throw new Error("Alamat tidak ditemukan.");
     }
   } catch (error) {
-    return errorServerResponse(res, error.message);
+    throw new Error(error);
   }
 };
 

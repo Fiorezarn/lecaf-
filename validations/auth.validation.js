@@ -1,5 +1,5 @@
 const Joi = require("joi");
-const { Users } = require("../models");
+const { User } = require("../models");
 const {
   errorClientResponse,
   errorServerResponse,
@@ -23,11 +23,11 @@ const bodyValidation = (req, res, next) => {
 const checkDuplicate = async (req, res, next) => {
   const { username, email } = req.body;
   try {
-    const name = await Users.findOne({
+    const name = await User.findOne({
       where: { us_username: username },
     });
 
-    const dataEmail = await Users.findOne({
+    const dataEmail = await User.findOne({
       where: { us_email: email },
     });
 

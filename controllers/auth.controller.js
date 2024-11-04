@@ -50,6 +50,7 @@ const Login = async (req, res) => {
     const { input, password } = req.body;
     const users = await User.findOne({
       attributes: [
+        "us_id",
         "us_username",
         "us_email",
         "us_phonenumber",

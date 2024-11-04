@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { Users } = require("../models");
+const { User } = require("../models");
 const fs = require("fs");
 const path = require("path");
 const nodemailer = require("nodemailer");
@@ -20,12 +20,10 @@ const verifyEmail = async (req, res) => {
   const { token } = req.query;
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    await Users.update(
-      { us_active: true },
-      { where: { us_id: decoded.us_id } }
-    );
+    await User.update({ us_active: true }, { where: { us_id: decoded.us_id } });
     return res.redirect(`${process.env.BASE_URL_FRONTEND}/verify-success`);
   } catch (error) {
+    console.log(error);
     return res.redirect(`${process.env.BASE_URL_FRONTEND}/verify-failed`);
   }
 };
