@@ -5,7 +5,7 @@ const axios = require("axios");
 
 (async () => {
   const response = await axios.get(
-    `${process.env.POSTMAN_URL}?access_key=${process.env.POSTMAN_ACCESS_KEY}`
+    `${process.env.POSTMAN_API_URL}?access_key=${process.env.POSTMAN_ACCESS_KEY}`
   );
   const openapi = await transpile(response.data.collection);
   openapi.servers = [

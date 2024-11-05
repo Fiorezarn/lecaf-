@@ -1,81 +1,652 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.0.3",
   "info": {
-    "title": "lecafé-be",
-    "version": "1.0.0"
+    "title": "Le Café",
+    "version": "1.0.0",
+    "contact": {}
   },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
   "paths": {
-    "/users": {
-      "get": {
-        "summary": "Get all users",
-        "operationId": "getAllUsers",
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/User"
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Register User",
+        "description": "Register User",
+        "operationId": "registerUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "rezskuy11@gmail.com"
+                  },
+                  "fullname": {
+                    "type": "string",
+                    "example": "Hansen Billy Ramadesa"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "billy1234"
+                  },
+                  "phonenumber": {
+                    "type": "string",
+                    "example": "085282810349"
+                  },
+                  "username": {
+                    "type": "string",
+                    "example": "Billy"
+                  }
+                }
+              },
+              "examples": {
+                "Register User": {
+                  "value": {
+                    "email": "rezskuy11@gmail.com",
+                    "fullname": "Hansen Billy Ramadesa",
+                    "password": "billy1234",
+                    "phonenumber": "085282810349",
+                    "username": "Billy"
                   }
                 }
               }
             }
           }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
         }
       }
-    }
-  },
-  "components": {
-    "schemas": {
-      "User": {
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "email",
-          "phone_number",
-          "address",
-          "is_active",
-          "is_deleted",
-          "created_at",
-          "updated_at"
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
         ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "phone_number": {
-            "type": "string"
-          },
-          "address": {
-            "type": "string"
-          },
-          "is_active": {
-            "type": "boolean"
-          },
-          "is_deleted": {
-            "type": "boolean"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time"
+        "summary": "Login",
+        "description": "Login",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "input": {
+                    "type": "string",
+                    "example": "asdsad"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "12345678"
+                  }
+                }
+              },
+              "examples": {
+                "Login": {
+                  "value": {
+                    "input": "asdsad",
+                    "password": "12345678"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/auth/send-email": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Send Email Verif Manual",
+        "description": "Send Email Verif Manual",
+        "operationId": "sendEmailVerifManual",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "rezskuy11@gmail.com"
+                  }
+                }
+              },
+              "examples": {
+                "Send Email Verif Manual": {
+                  "value": {
+                    "email": "rezskuy11@gmail.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/auth/send-reset-password": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Send Forgot Password",
+        "description": "Send Forgot Password",
+        "operationId": "sendForgotPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "rezskuy11@gmail.com"
+                  }
+                }
+              },
+              "examples": {
+                "Send Forgot Password": {
+                  "value": {
+                    "email": "rezskuy11@gmail.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/auth/forgot-password": {
+      "put": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Reset Password",
+        "description": "Reset Password",
+        "operationId": "resetPassword",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c19pZCI6MjAsInVzX2VtYWlsIjoicmV6c2t1eTExQGdtYWlsLmNvbSIsIm5hbWUiOiJWRVJJRklDQVRJT04iLCJpYXQiOjE3Mjk2Nzk2MTksImV4cCI6MTcyOTc2NjAxOX0.zROkjQm6zHOg33Jyuv_13VnySEY6prHe1b112LOIaT4"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "example": "hansenjelek"
+                  }
+                }
+              },
+              "examples": {
+                "Reset Password": {
+                  "value": {
+                    "password": "hansenjelek"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Logout",
+        "description": "Logout",
+        "operationId": "logout",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/menu": {
+      "get": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Get All Menu",
+        "description": "Get All Menu",
+        "operationId": "getAllMenu",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Add Menu",
+        "description": "Add Menu",
+        "operationId": "addMenu",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "example": "coffee"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "plerkudanil"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "Softex ojan"
+                  },
+                  "price": {
+                    "type": "string",
+                    "example": "10000"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/menu/11": {
+      "get": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Get Menu By ID",
+        "description": "Get Menu By ID",
+        "operationId": "getMenuById",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/menu/1": {
+      "put": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Update Menu",
+        "description": "Update Menu",
+        "operationId": "updateMenu",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "example": "non-coffee"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "lorem ipsum dolar sit amet"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "name": {
+                    "type": "string",
+                    "example": "Kopi Ojan"
+                  },
+                  "price": {
+                    "type": "string",
+                    "example": "20000"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Delete Menu",
+        "description": "Delete Menu",
+        "operationId": "deleteMenu",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "Delete Menu": {
+                  "value": ""
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/cart/add-cart": {
+      "post": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Add To Cart",
+        "description": "Add To Cart",
+        "operationId": "addToCart",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "menuId": {
+                    "type": "number",
+                    "example": 2
+                  },
+                  "quantity": {
+                    "type": "number",
+                    "example": 2
+                  },
+                  "userId": {
+                    "type": "number",
+                    "example": 2
+                  }
+                }
+              },
+              "examples": {
+                "Add To Cart": {
+                  "value": {
+                    "menuId": 2,
+                    "quantity": 2,
+                    "userId": 2
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/cart/35": {
+      "get": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Find cart by id user",
+        "description": "Find cart by id user",
+        "operationId": "findCartByIdUser",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/cart": {
+      "delete": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Delete Cart",
+        "description": "Delete Cart",
+        "operationId": "deleteCart",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "menuId": {
+                    "type": "number",
+                    "example": 3
+                  },
+                  "userId": {
+                    "type": "number",
+                    "example": 2
+                  }
+                }
+              },
+              "examples": {
+                "Delete Cart": {
+                  "value": {
+                    "menuId": 3,
+                    "userId": 2
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/order": {
+      "post": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Create Order",
+        "description": "Create Order",
+        "operationId": "createOrder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "menuJson": {
+                    "type": "object",
+                    "properties": {
+                      "mn_desc": {
+                        "type": "string",
+                        "example": "Cafe Latte is a coffee-based drink prepared by diluting coffee with steamed milk, typically in a 3:1 or 4:1 ratio."
+                      },
+                      "mn_id": {
+                        "type": "number",
+                        "example": 1
+                      },
+                      "mn_image": {
+                        "type": "string",
+                        "example": "/images/caffelate.jpg"
+                      },
+                      "mn_name": {
+                        "type": "string",
+                        "example": "Cafe Latte"
+                      },
+                      "mn_price": {
+                        "type": "number",
+                        "example": 30000
+                      }
+                    }
+                  },
+                  "quantity": {
+                    "type": "number",
+                    "example": 100
+                  },
+                  "site": {
+                    "type": "string",
+                    "example": "Tangerang Selatan"
+                  },
+                  "totalPrice": {
+                    "type": "number",
+                    "example": 800000
+                  },
+                  "typeOrder": {
+                    "type": "string",
+                    "example": "Delivery"
+                  },
+                  "userId": {
+                    "type": "number",
+                    "example": 1
+                  }
+                }
+              },
+              "examples": {
+                "Create Order": {
+                  "value": {
+                    "menuJson": {
+                      "mn_desc": "Cafe Latte is a coffee-based drink prepared by diluting coffee with steamed milk, typically in a 3:1 or 4:1 ratio.",
+                      "mn_id": 1,
+                      "mn_image": "/images/caffelate.jpg",
+                      "mn_name": "Cafe Latte",
+                      "mn_price": 30000
+                    },
+                    "quantity": 100,
+                    "site": "Tangerang Selatan",
+                    "totalPrice": 800000,
+                    "typeOrder": "Delivery",
+                    "userId": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/order/2": {
+      "get": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Get Order by user id",
+        "description": "Get Order by user id",
+        "operationId": "getOrderByUserId",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/maps": {
+      "get": {
+        "tags": [
+          "Maps"
+        ],
+        "summary": "Get Polyline",
+        "description": "Get Polyline",
+        "operationId": "getPolyline",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/user": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Get All User",
+        "description": "Get All User",
+        "operationId": "getAllUser",
+        "responses": {
+          "200": {
+            "description": ""
           }
         }
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Menu"
+    },
+    {
+      "name": "Cart"
+    },
+    {
+      "name": "Order"
+    },
+    {
+      "name": "Maps"
+    },
+    {
+      "name": "User"
+    }
+  ]
 }

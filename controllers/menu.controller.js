@@ -7,13 +7,47 @@ const {
 } = require("../helpers/response.helper");
 const { Op } = require("sequelize");
 const { uploadImage } = require("../service/cloudinary.service");
+const { getPagination, getPagingData } = require("../utils/pagination");
 
 const getAllMenu = async (req, res) => {
   try {
-    const menus = await Menu.findAll({
-      where: { is_deleted: 0 },
+    const { page = 1, limit = 10, search, category } = req.query;
+    const { limit: limitValue, offset } = getPagination(page, limit);
+
+    const whereConditions = { is_deleted: 0 };
+
+    if (search) {
+      whereConditions.mn_name = { [Op.like]: `%${search}%` };
+    }
+
+    if (category) {
+      whereConditions.mn_category = category;
+    }
+
+    const menus = await Menu.findAndCountAll({
+      where: whereConditions,
+      limit: limitValue,
+      offset,
     });
-    return successResponseData(res, "Success get all data!", menus, 200);
+
+    const response = getPagingData(menus, page, limitValue);
+    return res.status(200).send(response);
+  } catch (error) {
+    return errorServerResponse(res, error.message);
+  }
+};
+
+const getMenuRecommended = async (req, res) => {
+  try {
+    const menus = await Menu.findAll({
+      where: {
+        mn_id: {
+          [Op.in]: [1, 7, 14, 19],
+        },
+      },
+    });
+
+    return successResponseData(res, "Success get menu recommended", menus, 200);
   } catch (error) {
     return errorServerResponse(res, error.message);
   }
@@ -130,4 +164,5 @@ module.exports = {
   createMenu,
   updateMenu,
   deleteMenu,
+  getMenuRecommended,
 };
