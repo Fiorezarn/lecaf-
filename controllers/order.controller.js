@@ -13,7 +13,7 @@ const {
 const createOrder = async (req, res) => {
   try {
     const { userId, site, typeOrder, totalPrice, menuJson } = req.body;
-    console.log(isNaN(Number(site)));
+    const statusShipping = !isNaN(Number(site)) ? "Delivered" : "On-going";
     const maps = isNaN(Number(site))
       ? await generateLatLongFromAddress(site)
       : site;
@@ -24,6 +24,7 @@ const createOrder = async (req, res) => {
       or_longitude: maps.longitude,
       or_type_order: typeOrder,
       or_total_price: totalPrice,
+      or_status_shipping: statusShipping
     });
     const orderDetail = await OrderDetail.create({
       od_or_id: order.or_id,
