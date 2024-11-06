@@ -254,6 +254,40 @@
         "summary": "Get All Menu",
         "description": "Get All Menu",
         "operationId": "getAllMenu",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "1"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "5"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "passion"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "non-coffee"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -298,6 +332,21 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/menu/recommended": {
+      "get": {
+        "tags": [
+          "Menu"
+        ],
+        "summary": "Get Menu Recommended",
+        "description": "Get Menu Recommended",
+        "operationId": "getMenuRecommended",
         "responses": {
           "200": {
             "description": ""

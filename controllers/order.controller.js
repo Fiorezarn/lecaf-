@@ -13,7 +13,10 @@ const {
 const createOrder = async (req, res) => {
   try {
     const { userId, site, typeOrder, totalPrice, menuJson } = req.body;
-    const maps = await generateLatLongFromAddress(site);
+    console.log(isNaN(Number(site)));
+    const maps = isNaN(Number(site))
+      ? await generateLatLongFromAddress(site)
+      : site;
     const order = await Order.create({
       or_us_id: userId,
       or_site: site,
@@ -32,7 +35,7 @@ const createOrder = async (req, res) => {
       });
     }
     const data = { order, orderDetail };
-    return successResponseData(res, "Order created successfully", data);
+    return successResponseData(res, "Order created successfully", data, 201);
   } catch (error) {
     console.log(error);
 
