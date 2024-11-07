@@ -57,6 +57,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("On-going", "Delivered"),
         defaultValue: "On-going",
       },
+      or_platform_id: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      or_platform_token: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       is_deleted: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,

@@ -48,6 +48,14 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
+      or_platform_id: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      or_platform_token: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

@@ -1,4 +1,5 @@
 const { Order, OrderDetail, User, Cart } = require("../models");
+let prefixApp = process.env.PREFIX_APP;
 const {
   successResponseData,
   successResponse,
@@ -9,6 +10,11 @@ const {
   generateLatLongFromAddress,
   generatePolyline,
 } = require("../helpers/maps.helper");
+const {
+  midtransCreateSnapTransaction,
+  midtransVerifyTransaction,
+  midtransCancelTransaction,
+} = require("../service/midtrans.service");
 
 const createOrder = async (req, res) => {
   try {
@@ -24,7 +30,7 @@ const createOrder = async (req, res) => {
       or_longitude: maps.longitude,
       or_type_order: typeOrder,
       or_total_price: totalPrice,
-      or_status_shipping: statusShipping
+      or_status_shipping: statusShipping,
     });
     const orderDetail = await OrderDetail.create({
       od_or_id: order.or_id,
@@ -38,8 +44,64 @@ const createOrder = async (req, res) => {
     const data = { order, orderDetail };
     return successResponseData(res, "Order created successfully", data, 201);
   } catch (error) {
-    console.log(error);
+    return errorServerResponse(res, error.message);
+  }
+};
 
+const createSnapTransaction = async (req, res) => {
+  const { id } = req.params;
+  const { amount, email } = req.body;
+  const orderIdMidtrans = `LeCafe-${Date.now()}`;
+  try {
+    console.log("id", id);
+    const orders = await Order.findOne({
+      where: { or_id: id },
+      include: [
+        {
+          attributes: ["od_id", "od_or_id", "od_mn_json"],
+          model: OrderDetail,
+          as: "OrderDetail",
+        },
+      ],
+    });
+
+    console.log(orders.or_platform_id, "sing tenang platform id");
+
+    if (orders.or_platform_id === null && orders.or_platform_token === null) {
+      console.log("sing tenang");
+      const transactionDetails = {
+        transaction_details: {
+          order_id: orderIdMidtrans,
+          gross_amount: amount,
+        },
+        customer_details: {
+          email: email,
+        },
+        item_details: orders.OrderDetail[0].od_mn_json,
+      };
+      const transaction = await midtransCreateSnapTransaction(
+        transactionDetails
+      );
+      await Order.update(
+        {
+          or_platform_id: orderIdMidtrans,
+          or_platform_token: transaction.token,
+        },
+        { where: { or_id: id } }
+      );
+      orders.dataValues.transaction = { token: transaction.token };
+    } else {
+      orders.dataValues.transaction = { token: orders.or_platform_token };
+    }
+    console.log(orders.dataValues.transaction, "sing tenang cok");
+
+    return successResponseData(
+      res,
+      "Success get transaction token",
+      orders,
+      200
+    );
+  } catch (error) {
     return errorServerResponse(res, error.message);
   }
 };
@@ -93,4 +155,144 @@ const getOrderByUserId = async (req, res) => {
   }
 };
 
-module.exports = { createOrder, getOrderByUserId };
+const getAllListTransaction = async (req, res) => {
+  try {
+    const promises = [];
+    const orders = await Order.findAll({
+      where: {
+        or_status: {
+          [Op.ne]: "init",
+        },
+        or_active: true,
+      },
+      attributes: [
+        "or_id",
+        "or_total_price",
+        "or_status",
+        "or_payment_status",
+        "or_token_id",
+        "or_platform_id",
+      ],
+    });
+    orders.map((order) => {
+      promises.push(
+        (async () => {
+          const result = await midtransVerifyTransaction(order.or_platform_id);
+          let status = "pending";
+          if (
+            result.transaction_status === "settlement" ||
+            result.transaction_status === "success"
+          ) {
+            status = "paid";
+          }
+          if (result.transaction_status === "cancel") status = "cancelled";
+          if (result.transaction_status === "expire") status = "expired";
+          await order.update(
+            { or_payment_status: result.transaction_status, or_status: status },
+            { where: { or_platform_id: order.or_platform_id } }
+          );
+        })()
+      );
+    });
+    await Promise.all(promises);
+    return res.status(200).send({
+      status: "success",
+      code: 200,
+      message: "Successfully get all transaction",
+      data: orders,
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({
+      status: "failed",
+      message: error.message,
+      code: 500,
+    });
+  }
+};
+
+const verifyTransaction = async (req, res) => {
+  const { orderId } = req.params;
+  try {
+    const transaction = await midtransVerifyTransaction(orderId);
+    let order = await Order.findOne({
+      where: { or_platform_id: transaction.order_id },
+    });
+    if (!order) {
+      return res.status(404).send({
+        status: "failed",
+        code: 404,
+        message: "Order not found",
+      });
+    }
+    let status = "pending";
+    if (
+      transaction.transaction_status === "settlement" ||
+      transaction.transaction_status === "success"
+    ) {
+      status = "paid";
+    }
+    if (transaction.transaction_status === "cancel") status = "cancelled";
+    if (transaction.transaction_status === "expire") status = "expired";
+    await order.update(
+      { or_payment_status: transaction.transaction_status, or_status: status },
+      { where: { or_platform_id: order.or_platform_id } }
+    );
+    await Order.destroy({ where: { or_status: "init" } });
+    return res.status(200).send({
+      status: "success",
+      code: 200,
+      message: "Successfully verify transaction",
+      data: order,
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({
+      status: "failed",
+      message: error.message,
+      code: 500,
+    });
+  }
+};
+
+const cancelTransaction = async (req, res) => {
+  const { orderId } = req.params;
+  try {
+    const transaction = await midtransCancelTransaction(orderId);
+    let order = await Order.findOne({ where: { or_platform_id: orderId } });
+    if (!order) {
+      return res.status(404).send({
+        status: "failed",
+        code: 404,
+        message: "Order not found",
+      });
+    }
+    let status = "cancelled";
+    await order.update(
+      { or_payment_status: transaction.transaction_status, or_status: status },
+      { where: { or_platform_id: order.or_platform_id } }
+    );
+    return res.status(200).send({
+      status: "success",
+      code: 200,
+      message: "Successfully cancel transaction",
+      data: order,
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({
+      status: "failed",
+      message: error.message,
+      code: 500,
+    });
+  }
+};
+
+module.exports = {
+  createOrder,
+  getOrderByUserId,
+  getAllListTransaction,
+  createSnapTransaction,
+  verifyTransaction,
+  cancelTransaction,
+};

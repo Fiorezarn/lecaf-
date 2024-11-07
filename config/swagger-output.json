@@ -647,6 +647,48 @@
         }
       }
     },
+    "/order/payments/1": {
+      "post": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Snap Midtrans",
+        "description": "Snap Midtrans",
+        "operationId": "snapMidtrans",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "number",
+                    "example": 90000
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "fioreza1902@gmail.com"
+                  }
+                }
+              },
+              "examples": {
+                "Snap Midtrans": {
+                  "value": {
+                    "amount": 90000,
+                    "email": "fioreza1902@gmail.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/maps": {
       "get": {
         "tags": [
