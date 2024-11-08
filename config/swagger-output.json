@@ -543,6 +543,43 @@
         }
       }
     },
+    "/cart/39": {
+      "patch": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Update Quantity",
+        "description": "Update Quantity",
+        "operationId": "updateQuantity",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "quantity": {
+                    "type": "number",
+                    "example": 10
+                  }
+                }
+              },
+              "examples": {
+                "Update Quantity": {
+                  "value": {
+                    "quantity": 10
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/order": {
       "post": {
         "tags": [
