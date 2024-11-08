@@ -50,12 +50,13 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       or_status_payment: {
-        type: DataTypes.ENUM("Pending", "Success", "Failed"),
-        defaultValue: "Pending",
+        type: DataTypes.STRING,
+        defaultValue: "pending",
+        allowNull: false,
       },
       or_status_shipping: {
-        type: DataTypes.ENUM("On-going", "Delivered"),
-        defaultValue: "On-going",
+        type: DataTypes.ENUM("ongoing", "delivered", "cancelled"),
+        defaultValue: "ongoing",
       },
       or_platform_id: {
         type: DataTypes.STRING,

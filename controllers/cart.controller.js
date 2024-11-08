@@ -55,6 +55,35 @@ const findCartByUserId = async (req, res) => {
   }
 };
 
+const updateQuantity = async (req, res) => {
+  const { id } = req.params;
+  const { quantity } = req.body;
+  try {
+    const cart = await Cart.findOne({
+      where: {
+        cr_id: id,
+      },
+    });
+
+    if (!cart) {
+      return errorClientResponse(res, "Cart not found!", 404);
+    }
+
+    await Cart.update(
+      {
+        cr_quantity: quantity,
+      },
+      {
+        where: { cr_id: id },
+      }
+    );
+
+    return successResponse(res, "Cart successfully updated!");
+  } catch (error) {
+    return errorServerResponse(res, error.message);
+  }
+};
+
 const deleteCart = async (req, res) => {
   try {
     const { userId, menuId } = req.body;
@@ -73,4 +102,4 @@ const deleteCart = async (req, res) => {
   }
 };
 
-module.exports = { addToCart, findCartByUserId, deleteCart };
+module.exports = { addToCart, findCartByUserId, deleteCart, updateQuantity };

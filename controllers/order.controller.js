@@ -19,7 +19,7 @@ const {
 const createOrder = async (req, res) => {
   try {
     const { userId, site, typeOrder, totalPrice, menuJson } = req.body;
-    const statusShipping = !isNaN(Number(site)) ? "Delivered" : "On-going";
+    const statusShipping = !isNaN(Number(site)) ? "delivered" : "ongoing";
     const maps = isNaN(Number(site))
       ? await generateLatLongFromAddress(site)
       : site;
@@ -53,8 +53,7 @@ const createSnapTransaction = async (req, res) => {
   const { amount, email } = req.body;
   const orderIdMidtrans = `LeCafe-${Date.now()}`;
   try {
-    console.log("id", id);
-    const orders = await Order.findOne({
+    const order = await Order.findOne({
       where: { or_id: id },
       include: [
         {
@@ -65,10 +64,14 @@ const createSnapTransaction = async (req, res) => {
       ],
     });
 
-    console.log(orders.or_platform_id, "sing tenang platform id");
-
-    if (orders.or_platform_id === null && orders.or_platform_token === null) {
-      console.log("sing tenang");
+    if (!order) {
+      return res.status(404).send({
+        status: "failed",
+        code: 404,
+        message: "Order not found",
+      });
+    }
+    if (order.or_platform_id === null && order.or_platform_token === null) {
       const transactionDetails = {
         transaction_details: {
           order_id: orderIdMidtrans,
@@ -77,7 +80,7 @@ const createSnapTransaction = async (req, res) => {
         customer_details: {
           email: email,
         },
-        item_details: orders.OrderDetail[0].od_mn_json,
+        item_details: order.OrderDetail[0].od_mn_json,
       };
       const transaction = await midtransCreateSnapTransaction(
         transactionDetails
@@ -89,18 +92,54 @@ const createSnapTransaction = async (req, res) => {
         },
         { where: { or_id: id } }
       );
-      orders.dataValues.transaction = { token: transaction.token };
+      order.dataValues.transaction = { token: transaction.token };
     } else {
-      orders.dataValues.transaction = { token: orders.or_platform_token };
+      order.dataValues.transaction = { token: order.or_platform_token };
     }
-    console.log(orders.dataValues.transaction, "sing tenang cok");
-
     return successResponseData(
       res,
       "Success get transaction token",
-      orders,
+      order,
       200
     );
+  } catch (error) {
+    return errorServerResponse(res, error.message);
+  }
+};
+
+const verifyTransaction = async (req, res) => {
+  const { orderId } = req.params;
+  try {
+    const transaction = await midtransVerifyTransaction(orderId);
+    let order = await Order.findOne({
+      where: { or_platform_id: transaction.order_id },
+    });
+    const shipping =
+      order.or_type_order === "Dine-in" ? "delivered" : "ongoing";
+    if (!order) {
+      return res.status(404).send({
+        status: "failed",
+        code: 404,
+        message: "Order not found",
+      });
+    }
+    let status = "pending";
+    if (
+      transaction.transaction_status === "settlement" ||
+      transaction.transaction_status === "success"
+    ) {
+      status = "paid";
+    }
+    if (transaction.transaction_status === "cancel") status = "cancelled";
+    if (transaction.transaction_status === "expire") status = "expired";
+    await order.update(
+      {
+        or_status_payment: transaction.transaction_status,
+        or_status_shipping: shipping,
+      },
+      { where: { or_platform_id: order.or_platform_id } }
+    );
+    return successResponseData(res, "Success verify transaction", order, 200);
   } catch (error) {
     return errorServerResponse(res, error.message);
   }
@@ -211,55 +250,10 @@ const getAllListTransaction = async (req, res) => {
   }
 };
 
-const verifyTransaction = async (req, res) => {
-  const { orderId } = req.params;
-  try {
-    const transaction = await midtransVerifyTransaction(orderId);
-    let order = await Order.findOne({
-      where: { or_platform_id: transaction.order_id },
-    });
-    if (!order) {
-      return res.status(404).send({
-        status: "failed",
-        code: 404,
-        message: "Order not found",
-      });
-    }
-    let status = "pending";
-    if (
-      transaction.transaction_status === "settlement" ||
-      transaction.transaction_status === "success"
-    ) {
-      status = "paid";
-    }
-    if (transaction.transaction_status === "cancel") status = "cancelled";
-    if (transaction.transaction_status === "expire") status = "expired";
-    await order.update(
-      { or_payment_status: transaction.transaction_status, or_status: status },
-      { where: { or_platform_id: order.or_platform_id } }
-    );
-    await Order.destroy({ where: { or_status: "init" } });
-    return res.status(200).send({
-      status: "success",
-      code: 200,
-      message: "Successfully verify transaction",
-      data: order,
-    });
-  } catch (error) {
-    console.log(error.message);
-    return res.status(500).json({
-      status: "failed",
-      message: error.message,
-      code: 500,
-    });
-  }
-};
-
 const cancelTransaction = async (req, res) => {
-  const { orderId } = req.params;
+  const { id } = req.params;
   try {
-    const transaction = await midtransCancelTransaction(orderId);
-    let order = await Order.findOne({ where: { or_platform_id: orderId } });
+    let order = await Order.findOne({ where: { or_id: id } });
     if (!order) {
       return res.status(404).send({
         status: "failed",
@@ -267,24 +261,40 @@ const cancelTransaction = async (req, res) => {
         message: "Order not found",
       });
     }
-    let status = "cancelled";
-    await order.update(
-      { or_payment_status: transaction.transaction_status, or_status: status },
-      { where: { or_platform_id: order.or_platform_id } }
-    );
-    return res.status(200).send({
-      status: "success",
-      code: 200,
-      message: "Successfully cancel transaction",
-      data: order,
-    });
+
+    if (order.or_platform_id === null && order.or_platform_token === null) {
+      await order.update(
+        {
+          or_status_payment: "cancelled",
+          or_status_shipping: "cancelled",
+        },
+        { where: { or_id: id } }
+      );
+    }
+    if (order.or_platform_id !== null && order.or_platform_token !== null) {
+      const transaction = await midtransVerifyTransaction(order.or_platform_id);
+      if (transaction.status_code === "404") {
+        await order.update(
+          {
+            or_status_payment: "cancel",
+            or_status_shipping: "cancelled",
+          },
+          { where: { or_id: id } }
+        );
+      } else {
+        const cancel = await midtransCancelTransaction(order.or_platform_id);
+        await order.update(
+          {
+            or_status_payment: cancel.transaction_status,
+            or_status_shipping: "cancelled",
+          },
+          { where: { or_platform_id: order.or_platform_id } }
+        );
+      }
+    }
+    return successResponseData(res, "Success cancel transaction", order, 200);
   } catch (error) {
-    console.log(error.message);
-    return res.status(500).json({
-      status: "failed",
-      message: error.message,
-      code: 500,
-    });
+    return errorServerResponse(res, error.message);
   }
 };
 

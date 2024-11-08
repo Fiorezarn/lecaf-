@@ -689,6 +689,36 @@
         }
       }
     },
+    "/order/verify-payment/LeCafe-1731034329555": {
+      "post": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Verify Transactions",
+        "description": "Verify Transactions",
+        "operationId": "verifyTransactions",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/order/cancel-payment/7": {
+      "post": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Cancel Transaction",
+        "description": "Cancel Transaction",
+        "operationId": "cancelTransaction",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/maps": {
       "get": {
         "tags": [

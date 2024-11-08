@@ -37,12 +37,13 @@ module.exports = {
         allowNull: false,
       },
       or_status_payment: {
-        type: Sequelize.ENUM("Pending", "Success", "Failed"),
-        defaultValue: "Pending",
+        type: Sequelize.STRING,
+        defaultValue: "pending",
+        allowNull: false,
       },
       or_status_shipping: {
-        type: Sequelize.ENUM("On-going", "Delivered"),
-        defaultValue: "On-going",
+        type: Sequelize.ENUM("ongoing", "delivered", "cancelled"),
+        defaultValue: "ongoing",
       },
       is_deleted: {
         type: Sequelize.BOOLEAN,
