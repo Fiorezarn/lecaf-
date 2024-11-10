@@ -581,6 +581,19 @@
       }
     },
     "/order": {
+      "get": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Get Order by user id",
+        "description": "Get Order by user id",
+        "operationId": "getOrderByUserId",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
       "post": {
         "tags": [
           "Order"
@@ -669,21 +682,6 @@
         }
       }
     },
-    "/order/2": {
-      "get": {
-        "tags": [
-          "Order"
-        ],
-        "summary": "Get Order by user id",
-        "description": "Get Order by user id",
-        "operationId": "getOrderByUserId",
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        }
-      }
-    },
     "/order/payments/1": {
       "post": {
         "tags": [
@@ -741,7 +739,7 @@
         }
       }
     },
-    "/order/cancel-payment/7": {
+    "/order/cancel-payment/11": {
       "post": {
         "tags": [
           "Order"

@@ -85,6 +85,7 @@ const createSnapTransaction = async (req, res) => {
       const transaction = await midtransCreateSnapTransaction(
         transactionDetails
       );
+
       await Order.update(
         {
           or_platform_id: orderIdMidtrans,
@@ -128,10 +129,11 @@ const verifyTransaction = async (req, res) => {
       transaction.transaction_status === "settlement" ||
       transaction.transaction_status === "success"
     ) {
-      status = "paid";
+      status = "settlement";
     }
     if (transaction.transaction_status === "cancel") status = "cancelled";
     if (transaction.transaction_status === "expire") status = "expired";
+
     await order.update(
       {
         or_status_payment: transaction.transaction_status,
@@ -147,8 +149,9 @@ const verifyTransaction = async (req, res) => {
 
 const getOrderByUserId = async (req, res) => {
   try {
+    const promises = [];
     const { id } = req.params;
-    const order = await User.findOne({
+    const orders = await User.findOne({
       attributes: ["us_id"],
       include: [
         {
@@ -162,6 +165,7 @@ const getOrderByUserId = async (req, res) => {
             "or_total_price",
             "or_status_payment",
             "or_status_shipping",
+            "or_platform_id",
             "createdAt",
           ],
           model: Order,
@@ -177,11 +181,39 @@ const getOrderByUserId = async (req, res) => {
       ],
       where: { us_id: id },
     });
+
+    orders.Order.map((order) => {
+      promises.push(
+        (async () => {
+          const result = await midtransVerifyTransaction(order.or_platform_id);
+          let status = "pending";
+          if (
+            result.transaction_status === "settlement" ||
+            result.transaction_status === "success"
+          ) {
+            status = "settlement";
+          }
+          if (result.transaction_status === "cancel") status = "cancelled";
+          if (result.transaction_status === "expire") status = "expired";
+          await Order.update(
+            {
+              or_status_payment: result.transaction_status,
+              or_status_shipping:
+                result.transaction_status === "expire"
+                  ? "cancelled"
+                  : "ongoing",
+            },
+            { where: { or_platform_id: order.or_platform_id } }
+          );
+        })()
+      );
+    });
+    await Promise.all(promises);
     return successResponseData(
       res,
       `Success get all order with user with id ${id}`,
       {
-        order,
+        orders,
         origins: {
           latitude: process.env.STORE_LATITUDE,
           longitude: process.env.STORE_LONGITUDE,
@@ -191,62 +223,6 @@ const getOrderByUserId = async (req, res) => {
     );
   } catch (error) {
     return errorServerResponse(res, error.message);
-  }
-};
-
-const getAllListTransaction = async (req, res) => {
-  try {
-    const promises = [];
-    const orders = await Order.findAll({
-      where: {
-        or_status: {
-          [Op.ne]: "init",
-        },
-        or_active: true,
-      },
-      attributes: [
-        "or_id",
-        "or_total_price",
-        "or_status",
-        "or_payment_status",
-        "or_token_id",
-        "or_platform_id",
-      ],
-    });
-    orders.map((order) => {
-      promises.push(
-        (async () => {
-          const result = await midtransVerifyTransaction(order.or_platform_id);
-          let status = "pending";
-          if (
-            result.transaction_status === "settlement" ||
-            result.transaction_status === "success"
-          ) {
-            status = "paid";
-          }
-          if (result.transaction_status === "cancel") status = "cancelled";
-          if (result.transaction_status === "expire") status = "expired";
-          await order.update(
-            { or_payment_status: result.transaction_status, or_status: status },
-            { where: { or_platform_id: order.or_platform_id } }
-          );
-        })()
-      );
-    });
-    await Promise.all(promises);
-    return res.status(200).send({
-      status: "success",
-      code: 200,
-      message: "Successfully get all transaction",
-      data: orders,
-    });
-  } catch (error) {
-    console.log(error.message);
-    return res.status(500).json({
-      status: "failed",
-      message: error.message,
-      code: 500,
-    });
   }
 };
 
@@ -276,7 +252,7 @@ const cancelTransaction = async (req, res) => {
       if (transaction.status_code === "404") {
         await order.update(
           {
-            or_status_payment: "cancel",
+            or_status_payment: "cancelled",
             or_status_shipping: "cancelled",
           },
           { where: { or_id: id } }
@@ -301,7 +277,6 @@ const cancelTransaction = async (req, res) => {
 module.exports = {
   createOrder,
   getOrderByUserId,
-  getAllListTransaction,
   createSnapTransaction,
   verifyTransaction,
   cancelTransaction,

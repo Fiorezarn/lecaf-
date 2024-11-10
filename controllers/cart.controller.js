@@ -15,6 +15,14 @@ const addToCart = async (req, res) => {
       attributes: ["cr_id", "cr_quantity"],
       where: { [Op.and]: [{ cr_us_id: userId, cr_mn_id: menuId }] },
     });
+
+    const user = await User.findOne({
+      where: { us_id: userId },
+    });
+
+    if (!user) {
+      return errorClientResponse(res, "User not found!", 404);
+    }
     if (!cart) {
       cart = await Cart.create({
         cr_us_id: userId,
