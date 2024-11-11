@@ -23,15 +23,6 @@ module.exports = {
         type: Sequelize.JSON,
         allowNull: false,
       },
-      or_status_payment: {
-        type: Sequelize.STRING,
-        defaultValue: "pending",
-        allowNull: false,
-      },
-      or_status_shipping: {
-        type: Sequelize.ENUM("ongoing", "delivered", "cancelled"),
-        defaultValue: "ongoing",
-      },
       is_deleted: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,

@@ -35,7 +35,7 @@ const sendEmail = async (username, email, subject, title, token, link) => {
   );
   const template = handlebars.compile(emailTemplateSource);
   const htmlToSend = template({
-    logoUrl: `${process.env.BASE_URL}:${process.env.PORT}/images/logo192.png`,
+    logoUrl: `https://res.cloudinary.com/dsxnvgy7a/image/upload/v1731294851/Le_Cafe_wy4cea.png`,
     username: username,
     subject: subject,
     title: title,

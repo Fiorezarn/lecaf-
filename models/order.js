@@ -66,6 +66,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      or_payment_info: {
+        type: DataTypes.JSON,
+        allowNull: true,
+      },
       is_deleted: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,

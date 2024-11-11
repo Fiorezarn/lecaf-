@@ -29,7 +29,7 @@ const createOrder = async (req, res) => {
       or_latitude: maps.latitude,
       or_longitude: maps.longitude,
       or_type_order: typeOrder,
-      or_total_price: totalPrice,
+      or_total_price: Number(totalPrice),
       or_status_shipping: statusShipping,
     });
     const orderDetail = await OrderDetail.create({
@@ -115,8 +115,7 @@ const verifyTransaction = async (req, res) => {
     let order = await Order.findOne({
       where: { or_platform_id: transaction.order_id },
     });
-    const shipping =
-      order.or_type_order === "Dine-in" ? "delivered" : "ongoing";
+    let shipping = order.or_type_order === "Dine-in" ? "delivered" : "ongoing";
     if (!order) {
       return res.status(404).send({
         status: "failed",
@@ -131,13 +130,17 @@ const verifyTransaction = async (req, res) => {
     ) {
       status = "settlement";
     }
-    if (transaction.transaction_status === "cancel") status = "cancelled";
+    if (transaction.transaction_status === "cancel") {
+      status = "cancelled";
+      shipping = "cancelled";
+    }
     if (transaction.transaction_status === "expire") status = "expired";
 
     await order.update(
       {
-        or_status_payment: transaction.transaction_status,
+        or_status_payment: status,
         or_status_shipping: shipping,
+        or_payment_info: transaction,
       },
       { where: { or_platform_id: order.or_platform_id } }
     );
@@ -151,7 +154,7 @@ const getOrderByUserId = async (req, res) => {
   try {
     const promises = [];
     const { id } = req.params;
-    const orders = await User.findOne({
+    let orders = await User.findOne({
       attributes: ["us_id"],
       include: [
         {
@@ -166,6 +169,7 @@ const getOrderByUserId = async (req, res) => {
             "or_status_payment",
             "or_status_shipping",
             "or_platform_id",
+            "or_payment_info",
             "createdAt",
           ],
           model: Order,
@@ -183,6 +187,17 @@ const getOrderByUserId = async (req, res) => {
     });
 
     orders.Order.map((order) => {
+      const vaNumbers = order.or_payment_info?.va_numbers;
+      const issuer = order.or_payment_info?.issuer;
+
+      if (vaNumbers && vaNumbers.length > 0 && vaNumbers[0].bank) {
+        order.dataValues.payment_method = vaNumbers[0].bank;
+      } else if (issuer) {
+        order.dataValues.payment_method = issuer;
+      } else {
+        order.dataValues.payment_method = "Unknown";
+      }
+
       promises.push(
         (async () => {
           const result = await midtransVerifyTransaction(order.or_platform_id);
@@ -195,16 +210,15 @@ const getOrderByUserId = async (req, res) => {
           }
           if (result.transaction_status === "cancel") status = "cancelled";
           if (result.transaction_status === "expire") status = "expired";
-          await Order.update(
-            {
-              or_status_payment: result.transaction_status,
-              or_status_shipping:
-                result.transaction_status === "expire"
-                  ? "cancelled"
-                  : "ongoing",
-            },
-            { where: { or_platform_id: order.or_platform_id } }
-          );
+          if (result.transaction_status === "expire") {
+            await Order.update(
+              {
+                or_status_payment: status,
+                or_status_shipping: "cancelled",
+              },
+              { where: { or_platform_id: order.or_platform_id } }
+            );
+          }
         })()
       );
     });
@@ -239,7 +253,7 @@ const cancelTransaction = async (req, res) => {
     }
 
     if (order.or_platform_id === null && order.or_platform_token === null) {
-      await order.update(
+      await Order.update(
         {
           or_status_payment: "cancelled",
           or_status_shipping: "cancelled",
@@ -250,7 +264,7 @@ const cancelTransaction = async (req, res) => {
     if (order.or_platform_id !== null && order.or_platform_token !== null) {
       const transaction = await midtransVerifyTransaction(order.or_platform_id);
       if (transaction.status_code === "404") {
-        await order.update(
+        await Order.update(
           {
             or_status_payment: "cancelled",
             or_status_shipping: "cancelled",
@@ -259,9 +273,9 @@ const cancelTransaction = async (req, res) => {
         );
       } else {
         const cancel = await midtransCancelTransaction(order.or_platform_id);
-        await order.update(
+        await Order.update(
           {
-            or_status_payment: cancel.transaction_status,
+            or_status_payment: "cancelled",
             or_status_shipping: "cancelled",
           },
           { where: { or_platform_id: order.or_platform_id } }

@@ -15,6 +15,8 @@ module.exports = {
           model: "Users",
           key: "us_id",
         },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
       or_site: {
         type: Sequelize.STRING,
@@ -55,6 +57,10 @@ module.exports = {
       },
       or_platform_token: {
         type: Sequelize.STRING,
+        allowNull: true,
+      },
+      or_payment_info: {
+        type: Sequelize.JSON,
         allowNull: true,
       },
       createdAt: {
