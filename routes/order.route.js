@@ -6,8 +6,10 @@ const {
   createSnapTransaction,
   verifyTransaction,
   cancelTransaction,
+  getAllOrderDelivery,
 } = require("../controllers/order.controller");
 
+router.get("/delivery", getAllOrderDelivery);
 router.post("/payments/:id", createSnapTransaction);
 router.get("/:id", getOrderByUserId);
 router.post("/", createOrder);

@@ -150,6 +150,62 @@ const verifyTransaction = async (req, res) => {
   }
 };
 
+const getAllOrderDelivery = async (req, res) => {
+  try {
+    let orders = await User.findOne({
+      attributes: ["us_id"],
+      include: [
+        {
+          attributes: [
+            "or_id",
+            "or_us_id",
+            "or_site",
+            "or_longitude",
+            "or_latitude",
+            "or_type_order",
+            "or_total_price",
+            "or_status_payment",
+            "or_status_shipping",
+            "or_platform_id",
+            "or_payment_info",
+            "createdAt",
+          ],
+          model: Order,
+          as: "Order",
+          include: [
+            {
+              attributes: ["od_id", "od_or_id", "od_mn_json"],
+              model: OrderDetail,
+              as: "OrderDetail",
+            },
+          ],
+        },
+      ],
+      where: {
+        [Op.and]: [
+          { or_status_shipping: "ongoing" },
+          { or_status_payment: "settlement" },
+        ],
+      },
+    });
+
+    return successResponseData(
+      res,
+      `Success get all order pending`,
+      {
+        orders,
+        origins: {
+          latitude: process.env.STORE_LATITUDE,
+          longitude: process.env.STORE_LONGITUDE,
+        },
+      },
+      200
+    );
+  } catch (error) {
+    return errorServerResponse(res, error.message);
+  }
+};
+
 const getOrderByUserId = async (req, res) => {
   try {
     const promises = [];
@@ -294,4 +350,5 @@ module.exports = {
   createSnapTransaction,
   verifyTransaction,
   cancelTransaction,
+  getAllOrderDelivery,
 };
