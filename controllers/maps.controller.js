@@ -1,4 +1,3 @@
-// const { Cart, Menu, User } = require("../models");
 const axios = require("axios");
 const {
   successResponseData,
@@ -13,6 +12,7 @@ const createPolyline = async (req, res) => {
     const response = await generatePolyline(req.body);
     return successResponseData(res, "Success get polyline", response, 200);
   } catch (error) {
+    console.log(error);
     return errorServerResponse(res, error.message);
   }
 };

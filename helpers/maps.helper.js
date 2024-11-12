@@ -44,7 +44,7 @@ const generatePolyline = async (data) => {
             )}?overview=full&geometries=geojson`
           );
           const coordinate = response.data.routes[0].geometry.coordinates;
-          coordinates.push(coordinate);
+          coordinates.push({ id: d.id, coord: coordinate });
         })()
       );
     });

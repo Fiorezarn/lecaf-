@@ -15,6 +15,7 @@ const {
   midtransVerifyTransaction,
   midtransCancelTransaction,
 } = require("../service/midtrans.service");
+const { Op } = require("sequelize");
 
 const createOrder = async (req, res) => {
   try {
@@ -153,7 +154,7 @@ const verifyTransaction = async (req, res) => {
 const getAllOrderDelivery = async (req, res) => {
   try {
     let orders = await User.findOne({
-      attributes: ["us_id"],
+      attributes: ["us_id", "us_fullname"],
       include: [
         {
           attributes: [
@@ -179,14 +180,14 @@ const getAllOrderDelivery = async (req, res) => {
               as: "OrderDetail",
             },
           ],
+          where: {
+            [Op.and]: [
+              { or_status_shipping: "ongoing" },
+              { or_status_payment: "settlement" },
+            ],
+          },
         },
       ],
-      where: {
-        [Op.and]: [
-          { or_status_shipping: "ongoing" },
-          { or_status_payment: "settlement" },
-        ],
-      },
     });
 
     return successResponseData(
