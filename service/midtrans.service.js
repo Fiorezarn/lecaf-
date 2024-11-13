@@ -21,31 +21,12 @@ const midtransCreateSnapTransaction = async (transactionDetails) => {
     );
     return response.data;
   } catch (error) {
-    console.log(error.response);
     throw new Error(
       error.response.data.message || "Failed to create snap transaction"
     );
   }
 };
-const midtransCreateTransaction = async (transactionDetails) => {
-  try {
-    const response = await axios.post(`${baseUrl}/charge`, transactionDetails, {
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        Authorization: `Basic ${Buffer.from(serverKey + ":").toString(
-          "base64"
-        )}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.log(error.response);
-    throw new Error(
-      error.response.data.message || "Failed to create transaction"
-    );
-  }
-};
+
 const midtransVerifyTransaction = async (orderId) => {
   try {
     const response = await axios.get(`${baseUrl}/${orderId}/status`, {
@@ -80,7 +61,6 @@ const midtransCancelTransaction = async (orderId) => {
     );
     return response.data;
   } catch (error) {
-    console.log(error.response);
     throw new Error(
       error.response.data.message || "Failed to Cancel Transaction"
     );
@@ -89,7 +69,6 @@ const midtransCancelTransaction = async (orderId) => {
 
 module.exports = {
   midtransCreateSnapTransaction,
-  midtransCreateTransaction,
   midtransVerifyTransaction,
   midtransCancelTransaction,
 };

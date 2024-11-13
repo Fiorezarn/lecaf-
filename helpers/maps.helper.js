@@ -20,7 +20,7 @@ const generateLatLongFromAddress = async (address) => {
         address: response.data.candidates[0].address,
       };
     } else {
-      throw new Error("Alamat tidak ditemukan.");
+      throw new Error("Address not found, Please insert valid address.");
     }
   } catch (error) {
     throw new Error(error);

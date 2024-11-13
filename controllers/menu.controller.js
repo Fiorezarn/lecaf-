@@ -85,6 +85,7 @@ const getMenuById = async (req, res) => {
 const createMenu = async (req, res) => {
   try {
     const { name, price, description, category } = req.body;
+
     if (!req?.file) {
       return res.status(400).json({ error: "image is required" });
     }

@@ -81,7 +81,7 @@ const createSnapTransaction = async (req, res) => {
         customer_details: {
           email: email,
         },
-        item_details: order.OrderDetail[0].od_mn_json,
+        item_details: JSON.parse(order.OrderDetail[0].od_mn_json),
       };
       const transaction = await midtransCreateSnapTransaction(
         transactionDetails
@@ -212,7 +212,7 @@ const getOrderByUserId = async (req, res) => {
     const promises = [];
     const { id } = req.params;
     let orders = await User.findOne({
-      attributes: ["us_id"],
+      attributes: ["us_id", "us_fullname"],
       include: [
         {
           attributes: [
@@ -248,9 +248,9 @@ const getOrderByUserId = async (req, res) => {
       const issuer = order.or_payment_info?.issuer;
 
       if (vaNumbers && vaNumbers.length > 0 && vaNumbers[0].bank) {
-        order.dataValues.payment_method = vaNumbers[0].bank;
+        order.dataValues.payment_method = vaNumbers[0].bank.toUpperCase();
       } else if (issuer) {
-        order.dataValues.payment_method = issuer;
+        order.dataValues.payment_method = issuer.toUpperCase();
       } else {
         order.dataValues.payment_method = "Unknown";
       }

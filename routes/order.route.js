@@ -8,11 +8,12 @@ const {
   cancelTransaction,
   getAllOrderDelivery,
 } = require("../controllers/order.controller");
+const { bodyValidation } = require("../validations/order.validation");
 
 router.get("/delivery", getAllOrderDelivery);
 router.post("/payments/:id", createSnapTransaction);
 router.get("/:id", getOrderByUserId);
-router.post("/", createOrder);
+router.post("/", bodyValidation, createOrder);
 router.post("/verify-payment/:orderId", verifyTransaction);
 router.post("/cancel-payment/:id", cancelTransaction);
 

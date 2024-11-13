@@ -9,11 +9,21 @@ const {
   updateMenu,
   deleteMenu,
 } = require("../controllers/menu.controller");
+const {
+  bodyValidation,
+  checkDuplicate,
+} = require("../validations/menu.validation");
 
 router.get("/", getAllMenu);
 router.get("/recommended", getMenuRecommended);
 router.get("/:id", getMenuById);
-router.post("/", upload.single("image"), createMenu);
+router.post(
+  "/",
+  bodyValidation,
+  checkDuplicate,
+  upload.single("image"),
+  createMenu
+);
 router.put("/:id", upload.single("image"), updateMenu);
 router.patch("/:id", deleteMenu);
 

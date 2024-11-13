@@ -273,11 +273,7 @@ const logout = async (req, res) => {
     res.clearCookie("user", {
       httpOnly: false,
     });
-
-    return res.status(200).send({
-      status: "succes",
-      code: 200,
-    });
+    return successResponse(res, "Logout success!");
   } catch (error) {
     return errorServerResponse(res, error.message);
   }

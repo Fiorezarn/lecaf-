@@ -84,19 +84,19 @@
                 "properties": {
                   "input": {
                     "type": "string",
-                    "example": "asdsad"
+                    "example": "reza1902"
                   },
                   "password": {
                     "type": "string",
-                    "example": "12345678"
+                    "example": "adad"
                   }
                 }
               },
               "examples": {
                 "Login": {
                   "value": {
-                    "input": "asdsad",
-                    "password": "12345678"
+                    "input": "reza1902",
+                    "password": "adad"
                   }
                 }
               }
@@ -321,7 +321,7 @@
                   },
                   "name": {
                     "type": "string",
-                    "example": "Softex ojan"
+                    "example": "Tuna Puff"
                   },
                   "price": {
                     "type": "string",
@@ -682,6 +682,21 @@
         }
       }
     },
+    "/order/delivery": {
+      "get": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Get All Order Delivery",
+        "description": "Get All Order Delivery",
+        "operationId": "getAllOrderDelivery",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/order/payments/1": {
       "post": {
         "tags": [
@@ -754,8 +769,8 @@
         }
       }
     },
-    "/maps": {
-      "get": {
+    "/maps/create-polyline": {
+      "post": {
         "tags": [
           "Maps"
         ],
