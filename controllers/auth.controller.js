@@ -101,10 +101,7 @@ const Login = async (req, res) => {
       data: users,
     });
   } catch (error) {
-    return res.status(500).send({
-      status: "failed",
-      message: error.message,
-    });
+    return errorServerResponse(res, error.message || "Internal server error");
   }
 };
 
