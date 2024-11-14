@@ -19,9 +19,9 @@ router.get("/recommended", getMenuRecommended);
 router.get("/:id", getMenuById);
 router.post(
   "/",
+  upload.single("image"),
   bodyValidation,
   checkDuplicate,
-  upload.single("image"),
   createMenu
 );
 router.put("/:id", upload.single("image"), updateMenu);

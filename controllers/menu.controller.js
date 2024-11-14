@@ -29,7 +29,6 @@ const getAllMenu = async (req, res) => {
       limit: limitValue,
       offset,
     });
-
     const response = getPagingData(menus, page, limitValue);
     return res.status(200).send(response);
   } catch (error) {
@@ -85,7 +84,6 @@ const getMenuById = async (req, res) => {
 const createMenu = async (req, res) => {
   try {
     const { name, price, description, category } = req.body;
-
     if (!req?.file) {
       return res.status(400).json({ error: "image is required" });
     }
@@ -132,7 +130,7 @@ const updateMenu = async (req, res) => {
         where: { mn_id: id },
       }
     );
-    return successResponse(res, "Success update menu");
+    return successResponse(res, "Success update menu", 200);
   } catch (error) {
     return errorServerResponse(res, error.message);
   }
