@@ -5,10 +5,12 @@ const {
   findCartByUserId,
   deleteCart,
   updateQuantity,
+  countCart,
 } = require("../controllers/cart.controller");
 
 router.post("/", addToCart);
 router.get("/:id", findCartByUserId);
 router.delete("/", deleteCart);
 router.patch("/:id", updateQuantity);
+router.get("/count/:id", countCart);
 module.exports = router;

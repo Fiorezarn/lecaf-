@@ -13,7 +13,6 @@ const createPolyline = async (req, res) => {
     return successResponseData(res, "Success get polyline", response, 200);
   } catch (error) {
     return errorServerResponse(res, error.message);
-    s;
   }
 };
 

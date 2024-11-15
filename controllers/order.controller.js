@@ -246,11 +246,17 @@ const getOrderByUserId = async (req, res) => {
     orders.Order.map((order) => {
       const vaNumbers = order.or_payment_info?.va_numbers;
       const issuer = order.or_payment_info?.issuer;
+      const permata = order.or_payment_info?.permata_va_number;
+      const mandiri = order.or_payment_info?.biller_code;
 
       if (vaNumbers && vaNumbers.length > 0 && vaNumbers[0].bank) {
         order.dataValues.payment_method = vaNumbers[0].bank.toUpperCase();
       } else if (issuer) {
         order.dataValues.payment_method = issuer.toUpperCase();
+      } else if (permata) {
+        order.dataValues.payment_method = "PERMATA";
+      } else if (mandiri) {
+        order.dataValues.payment_method = "MANDIRI";
       } else {
         order.dataValues.payment_method = "Unknown";
       }
@@ -329,7 +335,7 @@ const cancelTransaction = async (req, res) => {
           { where: { or_id: id } }
         );
       } else {
-        const cancel = await midtransCancelTransaction(order.or_platform_id);
+        await midtransCancelTransaction(order.or_platform_id);
         await Order.update(
           {
             or_status_payment: "cancelled",
@@ -345,6 +351,30 @@ const cancelTransaction = async (req, res) => {
   }
 };
 
+const updateStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  try {
+    const order = await Order.findOne({ where: { or_id: id } });
+    if (!order) {
+      return res.status(404).send({
+        status: "failed",
+        code: 404,
+        message: "Order not found",
+      });
+    }
+    await Order.update(
+      {
+        or_status_shipping: status,
+      },
+      { where: { or_id: id } }
+    );
+    return successResponseData(res, "Success update status", order, 200);
+  } catch (error) {
+    return errorServerResponse(res, error.message);
+  }
+};
+
 module.exports = {
   createOrder,
   getOrderByUserId,
@@ -352,4 +382,5 @@ module.exports = {
   verifyTransaction,
   cancelTransaction,
   getAllOrderDelivery,
+  updateStatus,
 };

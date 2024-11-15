@@ -6,6 +6,7 @@ const {
   errorClientResponse,
 } = require("../helpers/response.helper");
 const { Op } = require("sequelize");
+const { log } = require("handlebars");
 
 const addToCart = async (req, res) => {
   try {
@@ -92,6 +93,32 @@ const updateQuantity = async (req, res) => {
   }
 };
 
+const countCart = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findOne({
+      attributes: ["us_id"],
+      where: { us_id: id },
+    });
+    if (!user) {
+      return errorClientResponse(res, "User not found!", 404);
+    }
+    const cart = await Cart.findAll({
+      attributes: ["cr_id", "cr_quantity"],
+      where: {
+        cr_us_id: id,
+      },
+    });
+    const quantity = cart.reduce((acc, item) => {
+      return acc + Number(item.cr_quantity);
+    }, 0);
+
+    return successResponseData(res, "Success get cart", quantity, 200);
+  } catch (error) {
+    return errorServerResponse(res, error.message);
+  }
+};
+
 const deleteCart = async (req, res) => {
   try {
     const { userId, menuId } = req.body;
@@ -110,4 +137,10 @@ const deleteCart = async (req, res) => {
   }
 };
 
-module.exports = { addToCart, findCartByUserId, deleteCart, updateQuantity };
+module.exports = {
+  addToCart,
+  findCartByUserId,
+  deleteCart,
+  updateQuantity,
+  countCart,
+};
