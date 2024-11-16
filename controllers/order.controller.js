@@ -117,11 +117,7 @@ const verifyTransaction = async (req, res) => {
     });
     let shipping = order.or_type_order === "Dine-in" ? "delivered" : "ongoing";
     if (!order) {
-      return res.status(404).send({
-        status: "failed",
-        code: 404,
-        message: "Order not found",
-      });
+      return errorClientResponse(res, "Order not found", 400);
     }
     let status = "pending";
     if (
@@ -136,14 +132,19 @@ const verifyTransaction = async (req, res) => {
     }
     if (transaction.transaction_status === "expire") status = "expired";
 
-    await order.update(
-      {
-        or_status_payment: status,
-        or_status_shipping: shipping,
-        or_payment_info: transaction,
-      },
-      { where: { or_platform_id: order.or_platform_id } }
-    );
+    if (
+      order.or_status_payment !== "settlement" &&
+      order.or_status_shipping !== "delivered"
+    ) {
+      await order.update(
+        {
+          or_status_payment: status,
+          or_status_shipping: shipping,
+          or_payment_info: transaction,
+        },
+        { where: { or_platform_id: order.or_platform_id } }
+      );
+    }
     return successResponseData(res, "Success verify transaction", order, 200);
   } catch (error) {
     return errorServerResponse(res, error.message);

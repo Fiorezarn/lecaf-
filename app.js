@@ -25,9 +25,8 @@ app.use(
     origin: true,
   })
 );
-
 app.listen(port, () => {
-  console.log(`server runing in ${baseUrl}`);
+  console.log(`server runing in ${baseUrl}:${port}`);
 });
 
 app.get("/", (req, res) => {
