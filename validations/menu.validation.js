@@ -2,8 +2,8 @@ const Joi = require("joi");
 const {
   errorClientResponse,
   errorServerResponse,
-} = require("../helpers/response.helper");
-const { Menu } = require("../models");
+} = require("@/helpers/response.helper");
+const { Menu } = require("@/models");
 
 const bodyValidation = (req, res, next) => {
   const schema = Joi.object({

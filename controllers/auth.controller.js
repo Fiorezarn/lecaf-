@@ -1,14 +1,14 @@
 const jwt = require("jsonwebtoken");
-const { User } = require("../models");
+const { User } = require("@/models");
 const bcrypt = require("bcrypt");
-const { generateToken, sendEmail } = require("../helpers/token.helper");
-const admin = require("../utils/firebase");
+const { generateToken, sendEmail } = require("@/helpers/token.helper");
+const admin = require("@/utils/firebase");
 const {
   successResponseData,
   successResponse,
   errorServerResponse,
   errorClientResponse,
-} = require("../helpers/response.helper");
+} = require("@/helpers/response.helper");
 const { Op } = require("sequelize");
 
 const Register = async (req, res) => {

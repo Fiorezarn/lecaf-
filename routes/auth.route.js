@@ -8,12 +8,12 @@ const {
   sendEmailVerificationManual,
   loginWithGoogle,
   logout,
-} = require("../controllers/auth.controller");
-const { verifyEmail } = require("../helpers/token.helper");
+} = require("@/controllers/auth.controller");
+const { verifyEmail } = require("@/helpers/token.helper");
 const {
   bodyValidation,
   checkDuplicate,
-} = require("../validations/auth.validation");
+} = require("@/validations/auth.validation");
 
 router.get("/verify-email", verifyEmail);
 router.post("/register", bodyValidation, checkDuplicate, Register);

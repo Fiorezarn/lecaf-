@@ -1,5 +1,5 @@
 const express = require("express");
-const upload = require("../utils/multer");
+const upload = require("@/utils/multer");
 const router = express.Router();
 const {
   getAllMenu,
@@ -8,11 +8,11 @@ const {
   createMenu,
   updateMenu,
   deleteMenu,
-} = require("../controllers/menu.controller");
+} = require("@/controllers/menu.controller");
 const {
   bodyValidation,
   checkDuplicate,
-} = require("../validations/menu.validation");
+} = require("@/validations/menu.validation");
 
 router.get("/", getAllMenu);
 router.get("/recommended", getMenuRecommended);

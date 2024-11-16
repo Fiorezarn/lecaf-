@@ -1,12 +1,11 @@
-const { Cart, Menu, User } = require("../models");
+const { Cart, Menu, User } = require("@/models");
 const {
   successResponseData,
   successResponse,
   errorServerResponse,
   errorClientResponse,
-} = require("../helpers/response.helper");
+} = require("@/helpers/response.helper");
 const { Op } = require("sequelize");
-const { log } = require("handlebars");
 
 const addToCart = async (req, res) => {
   try {

@@ -1,20 +1,20 @@
-const { Menu } = require("../models");
+const { Menu } = require("@/models");
 const {
   successResponseData,
   successResponse,
   errorServerResponse,
   errorClientResponse,
-} = require("../helpers/response.helper");
+} = require("@/helpers/response.helper");
 const { Op } = require("sequelize");
-const { uploadImage } = require("../service/cloudinary.service");
-const { getPagination, getPagingData } = require("../utils/pagination");
+const { uploadImage } = require("@/service/cloudinary.service");
+const { getPagination, getPagingData } = require("@/utils/pagination");
 
 const getAllMenu = async (req, res) => {
   try {
     const { page = 1, limit = 10, search, category } = req.query;
     const { limit: limitValue, offset } = getPagination(page, limit);
 
-    const whereConditions = { is_deleted: 0 };
+    let whereConditions = { is_deleted: 0 };
 
     if (search) {
       whereConditions.mn_name = { [Op.like]: `%${search}%` };

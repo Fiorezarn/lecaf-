@@ -1,4 +1,3 @@
-// utils/pagination.js
 const getPagination = (page, size) => {
   const limit = size ? +size : 10; // Default limit to 10 if not provided
   const offset = page ? (page - 1) * limit : 0; // Offset untuk halaman dimulai dari 1

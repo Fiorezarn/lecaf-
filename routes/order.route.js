@@ -6,12 +6,12 @@ const {
   createSnapTransaction,
   verifyTransaction,
   cancelTransaction,
-  getAllOrderDelivery,
   updateStatus,
-} = require("../controllers/order.controller");
-const { bodyValidation } = require("../validations/order.validation");
+  getAllOrder,
+} = require("@/controllers/order.controller");
+const { bodyValidation } = require("@/validations/order.validation");
 
-router.get("/delivery", getAllOrderDelivery);
+router.get("/", getAllOrder);
 router.post("/payments/:id", createSnapTransaction);
 router.get("/:id", getOrderByUserId);
 router.post("/", bodyValidation, createOrder);

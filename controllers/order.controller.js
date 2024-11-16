@@ -1,20 +1,19 @@
-const { Order, OrderDetail, User, Cart } = require("../models");
-let prefixApp = process.env.PREFIX_APP;
+const { Order, OrderDetail, User, Cart } = require("@/models");
 const {
   successResponseData,
   successResponse,
   errorServerResponse,
   errorClientResponse,
-} = require("../helpers/response.helper");
+} = require("@/helpers/response.helper");
 const {
   generateLatLongFromAddress,
   generatePolyline,
-} = require("../helpers/maps.helper");
+} = require("@/helpers/maps.helper");
 const {
   midtransCreateSnapTransaction,
   midtransVerifyTransaction,
   midtransCancelTransaction,
-} = require("../service/midtrans.service");
+} = require("@/service/midtrans.service");
 const { Op } = require("sequelize");
 
 const createOrder = async (req, res) => {
@@ -151,9 +150,29 @@ const verifyTransaction = async (req, res) => {
   }
 };
 
-const getAllOrderDelivery = async (req, res) => {
+const getAllOrder = async (req, res) => {
+  const { status } = req.query;
   try {
-    let orders = await User.findOne({
+    let whereConditions = {};
+    if (status === "ongoing") {
+      whereConditions = {
+        [Op.and]: [
+          { or_status_shipping: "ongoing" },
+          { or_status_payment: "settlement" },
+        ],
+      };
+    }
+
+    if (status === "delivered") {
+      whereConditions = {
+        [Op.and]: [
+          { or_status_shipping: "delivered" },
+          { or_status_payment: "settlement" },
+        ],
+      };
+    }
+
+    let orders = await User.findAll({
       attributes: ["us_id", "us_fullname"],
       include: [
         {
@@ -180,12 +199,7 @@ const getAllOrderDelivery = async (req, res) => {
               as: "OrderDetail",
             },
           ],
-          where: {
-            [Op.and]: [
-              { or_status_shipping: "ongoing" },
-              { or_status_payment: "settlement" },
-            ],
-          },
+          where: whereConditions,
         },
       ],
     });
@@ -193,13 +207,7 @@ const getAllOrderDelivery = async (req, res) => {
     return successResponseData(
       res,
       `Success get all order pending`,
-      {
-        orders,
-        origins: {
-          latitude: process.env.STORE_LATITUDE,
-          longitude: process.env.STORE_LONGITUDE,
-        },
-      },
+      orders,
       200
     );
   } catch (error) {
@@ -381,6 +389,6 @@ module.exports = {
   createSnapTransaction,
   verifyTransaction,
   cancelTransaction,
-  getAllOrderDelivery,
+  getAllOrder,
   updateStatus,
 };

@@ -1,4 +1,3 @@
-const { errorServerResponse } = require("./response.helper");
 const axios = require("axios");
 
 const generateLatLongFromAddress = async (address) => {

@@ -4,8 +4,8 @@ const {
   successResponse,
   errorServerResponse,
   errorClientResponse,
-} = require("../helpers/response.helper");
-const { generatePolyline } = require("../helpers/maps.helper");
+} = require("@/helpers/response.helper");
+const { generatePolyline } = require("@/helpers/maps.helper");
 
 const createPolyline = async (req, res) => {
   try {

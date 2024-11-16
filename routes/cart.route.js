@@ -6,7 +6,7 @@ const {
   deleteCart,
   updateQuantity,
   countCart,
-} = require("../controllers/cart.controller");
+} = require("@/controllers/cart.controller");
 
 router.post("/", addToCart);
 router.get("/:id", findCartByUserId);

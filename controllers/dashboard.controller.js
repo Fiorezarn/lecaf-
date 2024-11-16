@@ -1,10 +1,10 @@
-const { Cart, Menu, User, Order } = require("../models");
+const { Cart, Menu, User, Order } = require("@/models");
 const {
   successResponseData,
   successResponse,
   errorServerResponse,
   errorClientResponse,
-} = require("../helpers/response.helper");
+} = require("@/helpers/response.helper");
 
 const countData = async (req, res) => {
   try {
