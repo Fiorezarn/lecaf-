@@ -25,19 +25,23 @@ app.use(
     origin: true,
   })
 );
-app.listen(port, () => {
-  console.log(`server runing in ${baseUrl}:${port}`);
-});
 
 app.get("/", (req, res) => {
   return res.send("Hello World");
 });
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
-
 app.use("/auth", authRouter);
 app.use("/menu", menuRouter);
 app.use("/cart", cartRouter);
 app.use("/order", orderRouter);
 app.use("/maps", mapRouter);
 app.use("/dashboard", dashboardRouter);
+
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`server runing in ${baseUrl}:${port}`);
+  });
+}
+
+module.exports = app;

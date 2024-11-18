@@ -13,7 +13,7 @@ const {
   midtransCreateSnapTransaction,
   midtransVerifyTransaction,
   midtransCancelTransaction,
-} = require("@/service/midtrans.service");
+} = require("@/services/midtrans.service");
 const { Op } = require("sequelize");
 
 const createOrder = async (req, res) => {
