@@ -67,8 +67,9 @@ const getMenuById = async (req, res) => {
     const { id } = req.params;
     const menu = await findMenuById(id);
     if (!menu) {
-      return errorClientResponse(res, `Menu with id ${id} not found!`);
+      return errorClientResponse(res, `Menu with id ${id} not found!`, 404);
     }
+    console.log(menu);
     return successResponseData(
       res,
       `Success get menu with id ${id}`,
@@ -76,6 +77,7 @@ const getMenuById = async (req, res) => {
       200
     );
   } catch (error) {
+    console.log(error);
     return errorServerResponse(res, error.message);
   }
 };
@@ -163,4 +165,5 @@ module.exports = {
   updateMenu,
   deleteMenu,
   getMenuRecommended,
+  findMenuById,
 };
