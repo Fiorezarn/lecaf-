@@ -13,7 +13,7 @@ const {
   midtransCreateSnapTransaction,
   midtransVerifyTransaction,
   midtransCancelTransaction,
-} = require("@/service/midtrans.service");
+} = require("@/services/midtrans.service");
 const { Op } = require("sequelize");
 
 const createOrder = async (req, res) => {
@@ -164,7 +164,7 @@ const getAllOrder = async (req, res) => {
       };
     }
 
-    if (status === "delivered") {
+    if (status === "ordered") {
       whereConditions = {
         [Op.and]: [
           { or_status_shipping: "delivered" },
@@ -220,6 +220,40 @@ const getOrderByUserId = async (req, res) => {
   try {
     const promises = [];
     const { id } = req.params;
+    const { status } = req.query;
+    let whereConditions = {};
+    if (status === "pending") {
+      whereConditions = { or_status_payment: "pending" };
+    }
+
+    if (status === "ongoing") {
+      whereConditions = {
+        [Op.and]: [
+          { or_status_shipping: "ongoing" },
+          { or_status_payment: "settlement" },
+        ],
+      };
+    }
+
+    if (status === "ordered") {
+      whereConditions = {
+        [Op.or]: [
+          { or_status_payment: "expired" },
+          { or_status_shipping: "delivered" },
+        ],
+        [Op.and]: [{ or_status_payment: "settlement" }],
+      };
+    }
+
+    if (status === "failed") {
+      whereConditions = {
+        [Op.and]: [
+          { or_status_shipping: "cancelled" },
+          { or_status_payment: "cancelled" },
+        ],
+      };
+    }
+
     let orders = await User.findOne({
       attributes: ["us_id", "us_fullname"],
       include: [
@@ -240,6 +274,7 @@ const getOrderByUserId = async (req, res) => {
           ],
           model: Order,
           as: "Order",
+          where: whereConditions,
           include: [
             {
               attributes: ["od_id", "od_or_id", "od_mn_json"],
@@ -252,48 +287,52 @@ const getOrderByUserId = async (req, res) => {
       where: { us_id: id },
     });
 
-    orders.Order.map((order) => {
-      const vaNumbers = order.or_payment_info?.va_numbers;
-      const issuer = order.or_payment_info?.issuer;
-      const permata = order.or_payment_info?.permata_va_number;
-      const mandiri = order.or_payment_info?.biller_code;
+    if (orders && orders.Order) {
+      orders.Order.map((order) => {
+        const vaNumbers = order.or_payment_info?.va_numbers;
+        const issuer = order.or_payment_info?.issuer;
+        const permata = order.or_payment_info?.permata_va_number;
+        const mandiri = order.or_payment_info?.biller_code;
 
-      if (vaNumbers && vaNumbers.length > 0 && vaNumbers[0].bank) {
-        order.dataValues.payment_method = vaNumbers[0].bank.toUpperCase();
-      } else if (issuer) {
-        order.dataValues.payment_method = issuer.toUpperCase();
-      } else if (permata) {
-        order.dataValues.payment_method = "PERMATA";
-      } else if (mandiri) {
-        order.dataValues.payment_method = "MANDIRI";
-      } else {
-        order.dataValues.payment_method = "Unknown";
-      }
+        if (vaNumbers && vaNumbers.length > 0 && vaNumbers[0].bank) {
+          order.dataValues.payment_method = vaNumbers[0].bank.toUpperCase();
+        } else if (issuer) {
+          order.dataValues.payment_method = issuer.toUpperCase();
+        } else if (permata) {
+          order.dataValues.payment_method = "PERMATA";
+        } else if (mandiri) {
+          order.dataValues.payment_method = "MANDIRI";
+        } else {
+          order.dataValues.payment_method = "Unknown";
+        }
 
-      promises.push(
-        (async () => {
-          const result = await midtransVerifyTransaction(order.or_platform_id);
-          let status = "pending";
-          if (
-            result.transaction_status === "settlement" ||
-            result.transaction_status === "success"
-          ) {
-            status = "settlement";
-          }
-          if (result.transaction_status === "cancel") status = "cancelled";
-          if (result.transaction_status === "expire") status = "expired";
-          if (result.transaction_status === "expire") {
-            await Order.update(
-              {
-                or_status_payment: status,
-                or_status_shipping: "cancelled",
-              },
-              { where: { or_platform_id: order.or_platform_id } }
+        promises.push(
+          (async () => {
+            const result = await midtransVerifyTransaction(
+              order.or_platform_id
             );
-          }
-        })()
-      );
-    });
+            let status = "pending";
+            if (
+              result.transaction_status === "settlement" ||
+              result.transaction_status === "success"
+            ) {
+              status = "settlement";
+            }
+            if (result.transaction_status === "cancel") status = "cancelled";
+            if (result.transaction_status === "expire") status = "expired";
+            if (result.transaction_status === "expire") {
+              await Order.update(
+                {
+                  or_status_payment: status,
+                  or_status_shipping: "cancelled",
+                },
+                { where: { or_platform_id: order.or_platform_id } }
+              );
+            }
+          })()
+        );
+      });
+    }
     await Promise.all(promises);
     return successResponseData(
       res,
