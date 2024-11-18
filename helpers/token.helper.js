@@ -35,7 +35,7 @@ const sendEmail = async (username, email, subject, title, token, link) => {
   );
   const template = handlebars.compile(emailTemplateSource);
   const htmlToSend = template({
-    logoUrl: `https://res.cloudinary.com/dsxnvgy7a/image/upload/v1731294851/Le_Cafe_wy4cea.png`,
+    logoUrl: `https://res.cloudinary.com/dsxnvgy7a/image/upload/v1731931880/Le_Cafe-removebg-preview_swqy7c.png`,
     username: username,
     subject: subject,
     title: title,
