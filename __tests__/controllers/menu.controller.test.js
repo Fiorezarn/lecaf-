@@ -1,7 +1,6 @@
 const request = require("supertest");
 const app = require("@/app");
 const { Menu } = require("@/models");
-const { findMenuById } = require("@/controllers/menu.controller");
 const { Op } = require("sequelize");
 const { uploadImage } = require("@/services/cloudinary.service");
 
@@ -14,10 +13,6 @@ jest.mock("@/models", () => ({
     update: jest.fn(),
   },
 }));
-
-// jest.mock("@/services/cloudinary.service", () => ({
-//   uploadImage: jest.fn(),
-// }));
 
 describe("Menu Controllers", () => {
   describe("Get All Menu", () => {
@@ -308,58 +303,6 @@ describe("Menu Controllers", () => {
       expect(response.body).toHaveProperty("message", "Database Error");
     });
   });
-  describe("Find Menu By Id", () => {
-    beforeEach(() => {
-      jest.clearAllMocks();
-    });
-
-    afterEach(() => {
-      jest.restoreAllMocks();
-    });
-
-    it("should return the menu item when a valid ID is provided", async () => {
-      const mockMenu = {
-        mn_id: 1,
-        mn_name: "Cafe Latte",
-        mn_image:
-          "https://res.cloudinary.com/dsxnvgy7a/image/upload/v1730608583/caffelate_wsytuw.jpg",
-        mn_desc:
-          "Cafe Latte is a coffee-based drink prepared by diluting coffee with steamed milk, typically in a 3:1 or 4:1 ratio.",
-        mn_price: 30000,
-        mn_category: "coffee",
-        is_deleted: 0,
-        createdAt: "2024-11-15T06:39:29.000Z",
-        updatedAt: "2024-11-15T06:39:29.000Z",
-      };
-
-      Menu.findOne.mockResolvedValue(mockMenu);
-
-      const result = await findMenuById(1);
-      expect(Menu.findOne).toHaveBeenCalledWith({
-        where: { [Op.and]: [{ mn_id: 1 }, { is_deleted: 0 }] },
-      });
-      expect(result).toEqual(mockMenu);
-    });
-
-    it("should return null when no menu is found for the provided ID", async () => {
-      Menu.findOne.mockResolvedValue(null);
-
-      const result = await findMenuById(999);
-      expect(Menu.findOne).toHaveBeenCalledWith({
-        where: { [Op.and]: [{ mn_id: 999 }, { is_deleted: 0 }] },
-      });
-      expect(result).toBeNull();
-    });
-
-    it("should throw an error when a database error occurs", async () => {
-      Menu.findOne.mockRejectedValue(new Error("Database error"));
-
-      await expect(findMenuById(1)).rejects.toThrow("Database error"); // Validasi bahwa fungsi melempar error
-      expect(Menu.findOne).toHaveBeenCalledWith({
-        where: { [Op.and]: [{ mn_id: 1 }, { is_deleted: 0 }] },
-      });
-    });
-  });
   describe("Get Menu By Id", () => {
     beforeEach(() => {
       jest.clearAllMocks();
@@ -434,165 +377,172 @@ describe("Menu Controllers", () => {
       expect(response.body).toHaveProperty("message", "Database Error");
     });
   });
-  // describe("Create Menu", () => {
-  //   beforeEach(() => {
-  //     jest.clearAllMocks();
-  //   });
+  describe("Create Menu", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
 
-  //   afterEach(() => {
-  //     jest.restoreAllMocks();
-  //   });
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
 
-  //   it("should return 201 and create new menu", async () => {
-  //     const mockMenu = {
-  //       name: "Cafe Latte",
-  //       price: 30000,
-  //       description:
-  //         "Cafe Latte is a coffee-based drink prepared by diluting coffee with steamed milk, typically in a 3:1 or 4:1 ratio.",
-  //       category: "coffee",
-  //     };
+    it("should return 201 and create new menu", async () => {
+      const mockMenu = {
+        name: "Cafe Latte",
+        price: 30000,
+        description: "Cafe Latte is a coffee-based drink...",
+        category: "coffee",
+      };
 
-  //     const mockImageUpload = {
-  //       secure_url: "https://example.com/image.jpg",
-  //     };
+      const mockImageUpload = {
+        secure_url: "https://example.com/image.jpg",
+      };
 
-  //     jest.spyOn(Menu, "create").mockResolvedValue({
-  //       id: 1,
-  //       ...mockMenu,
-  //       mn_image: mockImageUpload.secure_url,
-  //       createdAt: new Date(),
-  //       updatedAt: new Date(),
-  //     });
+      jest.mock("@/utils/cloudinary", () => ({
+        uploadImage: jest.fn().mockResolvedValue(mockImageUpload),
+      }));
 
-  //     jest.mock("@/utils/cloudinary", () => ({
-  //       uploader: {
-  //         upload_stream: jest.fn((options, callback) => {
-  //           callback(null, mockImageUpload);
-  //         }),
-  //       },
-  //     }));
+      jest.spyOn(Menu, "create").mockResolvedValue({
+        id: 1,
+        mn_name: mockMenu.name,
+        mn_price: mockMenu.price,
+        mn_desc: mockMenu.description,
+        mn_category: mockMenu.category,
+        mn_image: mockImageUpload.secure_url,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
 
-  //     const response = await request(app)
-  //       .post("/menu")
-  //       .field("name", mockMenu.name)
-  //       .field("price", mockMenu.price)
-  //       .field("description", mockMenu.description)
-  //       .field("category", mockMenu.category)
-  //       .attach("file", "__tests__/fixtures/cafe-latte.jpg");
+      const response = await request(app)
+        .post("/menu")
+        .field("name", mockMenu.name)
+        .field("price", mockMenu.price)
+        .field("description", mockMenu.description)
+        .field("category", mockMenu.category)
+        .attach("image", Buffer.from("mock image"), "image.jpg");
 
-  //     expect(response.status).toBe(201);
-  //     expect(response.body).toHaveProperty("code", 201);
-  //     expect(response.body).toHaveProperty("status", "success");
-  //     expect(response.body).toHaveProperty(
-  //       "message",
-  //       "Success create new menu"
-  //     );
-  //     expect(response.body.data).toHaveProperty("mn_name", mockMenu.name);
-  //   });
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty("code", 201);
+      expect(response.body).toHaveProperty("status", "success");
+      expect(response.body).toHaveProperty("message", "Success create menu");
+      expect(response.body.data).toEqual(
+        expect.objectContaining({
+          mn_name: mockMenu.name,
+          mn_price: mockMenu.price,
+          mn_desc: mockMenu.description,
+          mn_category: mockMenu.category,
+          mn_image: mockImageUpload.secure_url,
+        })
+      );
+    });
 
-  //   // it("should return 400 if image is not provided", async () => {
-  //   //   const mockMenu = {
-  //   //     name: "Cafe Latte",
-  //   //     price: 30000,
-  //   //     description:
-  //   //       "Cafe Latte is a coffee-based drink prepared by diluting coffee with steamed milk, typically in a 3:1 or 4:1 ratio.",
-  //   //     category: "coffee",
-  //   //   };
+    it("should return 400 if image is not provided", async () => {
+      const mockMenu = {
+        name: "Cafe Latte",
+        price: 30000,
+        description:
+          "Cafe Latte is a coffee-based drink prepared by diluting coffee with steamed milk, typically in a 3:1 or 4:1 ratio.",
+        category: "coffee",
+      };
 
-  //   //   const response = await request(app)
-  //   //     .post("/menu")
-  //   //     .send(mockMenu)
-  //   //     .set("Content-Type", "application/json");
+      const response = await request(app)
+        .post("/menu")
+        .send(mockMenu)
+        .set("Content-Type", "application/json");
 
-  //   //   expect(response.status).toBe(400);
-  //   //   expect(response.body).toHaveProperty("code", 400);
-  //   //   expect(response.body).toHaveProperty("status", "error");
-  //   //   expect(response.body).toHaveProperty("message", "Image is required");
-  //   // });
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty("code", 400);
+      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body).toHaveProperty("message", "Image is required");
+    });
 
-  //   // it("should return 500 when an error occurs", async () => {
-  //   //   const mockMenu = {
-  //   //     name: "Cafe Latte",
-  //   //     price: 30000,
-  //   //     description:
-  //   //       "Cafe Latte is a coffee-based drink prepared by diluting coffee with steamed milk, typically in a 3:1 or 4:1 ratio.",
-  //   //     category: "coffee",
-  //   //   };
+    it("should return 500 when an error occurs", async () => {
+      const mockMenu = {
+        name: "Cafe Latte",
+        price: 30000,
+        description:
+          "Cafe Latte is a coffee-based drink prepared by diluting coffee with steamed milk, typically in a 3:1 or 4:1 ratio.",
+        category: "coffee",
+      };
 
-  //   //   jest.spyOn(global, "uploadImage").mockImplementation(() => {
-  //   //     throw new Error("Upload error");
-  //   //   });
+      jest.spyOn(global, "uploadImage").mockImplementation(() => {
+        throw new Error("Upload error");
+      });
 
-  //   //   const response = await request(app)
-  //   //     .post("/menu")
-  //   //     .field("name", mockMenu.name)
-  //   //     .field("price", mockMenu.price)
-  //   //     .field("description", mockMenu.description)
-  //   //     .field("category", mockMenu.category)
-  //   //     .attach("file", "__tests__/fixtures/cafe-latte.jpg"); // Contoh file gambar
+      const response = await request(app)
+        .post("/menu")
+        .field("name", mockMenu.name)
+        .field("price", mockMenu.price)
+        .field("description", mockMenu.description)
+        .field("category", mockMenu.category)
+        .attach("file", "__tests__/fixtures/cafe-latte.jpg");
 
-  //   //   expect(response.status).toBe(500);
-  //   //   expect(response.body).toHaveProperty("code", 500);
-  //   //   expect(response.body).toHaveProperty("status", "error");
-  //   //   expect(response.body).toHaveProperty("message", "Upload error");
-  //   // });
-  // });
-  // describe("Delete Menu", () => {
-  //   beforeEach(() => {
-  //     jest.clearAllMocks();
-  //   });
+      expect(response.status).toBe(500);
+      expect(response.body).toHaveProperty("code", 500);
+      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body).toHaveProperty("message", "Upload error");
+    });
+  });
+  describe("Update Menu", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
 
-  //   it("should delete a menu and return success response", async () => {
-  //     const mockMenu = {
-  //       mn_id: 1,
-  //       name: "Cafe Latte",
-  //       price: 30000,
-  //       description: "A delicious coffee drink",
-  //       is_deleted: 0,
-  //     };
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+  });
+  describe("Delete Menu", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
 
-  //     findMenuById.mockResolvedValue(mockMenu);
-  //     Menu.update.mockResolvedValue([1]); // The [1] represents 1 row updated
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
 
-  //     const response = await request(app).delete("/menu/1");
+    it("should delete a menu and return a success response", async () => {
+      const mockMenu = {
+        mn_id: 1,
+        name: "Cafe Latte",
+        price: 30000,
+        description: "A delicious coffee drink",
+        is_deleted: 0,
+      };
 
-  //     expect(response.status).toBe(200);
-  //     expect(response.body).toHaveProperty("status", "success");
-  //     expect(response.body).toHaveProperty("message", "Success delete menu");
-  //     expect(findMenuById).toHaveBeenCalledWith(1);
-  //     expect(Menu.update).toHaveBeenCalledWith(
-  //       { is_deleted: 1 },
-  //       { where: { mn_id: "1" } }
-  //     );
-  //   });
+      Menu.findOne = jest.fn().mockResolvedValue(mockMenu);
+      Menu.update = jest.fn().mockResolvedValue([1]);
 
-  //   it("should return 404 if the menu is not found", async () => {
-  //     // Mock findMenuById to return null (no menu found)
-  //     findMenuById.mockResolvedValue(null);
+      const response = await request(app).patch("/menu/1");
 
-  //     const response = await request(app).delete("/menu/999");
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty("code", 200);
+      expect(response.body).toHaveProperty("status", "success");
+      expect(response.body).toHaveProperty("message", "Success delete menu");
+    });
 
-  //     expect(response.status).toBe(404);
-  //     expect(response.body).toHaveProperty("status", "error");
-  //     expect(response.body).toHaveProperty(
-  //       "message",
-  //       "Menu with id 999 not found!"
-  //     );
-  //     expect(findMenuById).toHaveBeenCalledWith(999);
-  //     expect(Menu.update).not.toHaveBeenCalled();
-  //   });
+    it("should return 404 if the menu is not found", async () => {
+      Menu.findOne = jest.fn().mockResolvedValue(null);
+      const response = await request(app).patch("/menu/999");
 
-  //   it("should return 500 on server error", async () => {
-  //     // Mock findMenuById to throw an error
-  //     findMenuById.mockRejectedValue(new Error("Database error"));
+      expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty("code", 404);
+      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body).toHaveProperty(
+        "message",
+        "Menu with id 999 not found!"
+      );
+    });
 
-  //     const response = await request(app).delete("/menu/1");
+    it("should return 500 on server error", async () => {
+      Menu.findOne = jest.fn().mockRejectedValue(new Error("Database error"));
 
-  //     expect(response.status).toBe(500);
-  //     expect(response.body).toHaveProperty("status", "error");
-  //     expect(response.body).toHaveProperty("message", "Database error");
-  //     expect(findMenuById).toHaveBeenCalledWith(1);
-  //     expect(Menu.update).not.toHaveBeenCalled();
-  //   });
-  // });
+      const response = await request(app).patch("/menu/1");
+
+      expect(response.status).toBe(500);
+      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body).toHaveProperty("message", "Database error");
+      expect(Menu.update).not.toHaveBeenCalled();
+    });
+  });
 });

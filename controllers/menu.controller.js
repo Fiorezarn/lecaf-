@@ -51,21 +51,12 @@ const getMenuRecommended = async (req, res) => {
   }
 };
 
-const findMenuById = async (id) => {
-  try {
-    const menu = await Menu.findOne({
-      where: { [Op.and]: [{ mn_id: id }, { is_deleted: 0 }] },
-    });
-    return menu;
-  } catch (error) {
-    throw error;
-  }
-};
-
 const getMenuById = async (req, res) => {
   try {
     const { id } = req.params;
-    const menu = await findMenuById(id);
+    const menu = await Menu.findOne({
+      where: { [Op.and]: [{ mn_id: id }, { is_deleted: 0 }] },
+    });
     if (!menu) {
       return errorClientResponse(res, `Menu with id ${id} not found!`, 404);
     }
@@ -107,7 +98,9 @@ const updateMenu = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, price, description, category } = req.body;
-    const menu = await findMenuById(id);
+    const menu = await Menu.findOne({
+      where: { [Op.and]: [{ mn_id: id }, { is_deleted: 0 }] },
+    });
     if (!menu) {
       return errorClientResponse(res, `Menu with id ${id} not found!`);
     }
@@ -138,9 +131,11 @@ const updateMenu = async (req, res) => {
 const deleteMenu = async (req, res) => {
   try {
     const { id } = req.params;
-    const menu = await findMenuById(id);
+    const menu = await Menu.findOne({
+      where: { [Op.and]: [{ mn_id: id }, { is_deleted: 0 }] },
+    });
     if (!menu) {
-      return errorClientResponse(res, `Menu with id ${id} not found!`);
+      return errorClientResponse(res, `Menu with id ${id} not found!`, 404);
     }
     await Menu.update(
       {
@@ -163,5 +158,4 @@ module.exports = {
   updateMenu,
   deleteMenu,
   getMenuRecommended,
-  findMenuById,
 };
