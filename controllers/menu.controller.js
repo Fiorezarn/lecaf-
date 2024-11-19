@@ -58,7 +58,7 @@ const findMenuById = async (id) => {
     });
     return menu;
   } catch (error) {
-    return;
+    throw error;
   }
 };
 
@@ -69,7 +69,6 @@ const getMenuById = async (req, res) => {
     if (!menu) {
       return errorClientResponse(res, `Menu with id ${id} not found!`, 404);
     }
-    console.log(menu);
     return successResponseData(
       res,
       `Success get menu with id ${id}`,
@@ -77,7 +76,6 @@ const getMenuById = async (req, res) => {
       200
     );
   } catch (error) {
-    console.log(error);
     return errorServerResponse(res, error.message);
   }
 };

@@ -133,7 +133,7 @@ const verifyTransaction = async (req, res) => {
     if (transaction.transaction_status === "expire") status = "expired";
 
     if (
-      order.or_status_payment !== "settlement" &&
+      order.or_status_payment !== "settlement" ||
       order.or_status_shipping !== "delivered"
     ) {
       await order.update(
@@ -173,36 +173,34 @@ const getAllOrder = async (req, res) => {
       };
     }
 
-    let orders = await User.findAll({
-      attributes: ["us_id", "us_fullname"],
+    let orders = await Order.findAll({
+      attributes: [
+        "or_id",
+        "or_us_id",
+        "or_site",
+        "or_longitude",
+        "or_latitude",
+        "or_type_order",
+        "or_total_price",
+        "or_status_payment",
+        "or_status_shipping",
+        "or_platform_id",
+        "or_payment_info",
+        "createdAt",
+      ],
       include: [
         {
-          attributes: [
-            "or_id",
-            "or_us_id",
-            "or_site",
-            "or_longitude",
-            "or_latitude",
-            "or_type_order",
-            "or_total_price",
-            "or_status_payment",
-            "or_status_shipping",
-            "or_platform_id",
-            "or_payment_info",
-            "createdAt",
-          ],
-          model: Order,
-          as: "Order",
-          include: [
-            {
-              attributes: ["od_id", "od_or_id", "od_mn_json"],
-              model: OrderDetail,
-              as: "OrderDetail",
-            },
-          ],
-          where: whereConditions,
+          model: User,
+          as: "User",
+          attributes: ["us_id", "us_fullname"],
+        },
+        {
+          model: OrderDetail,
+          as: "OrderDetail",
+          attributes: ["od_id", "od_or_id", "od_mn_json"],
         },
       ],
+      where: whereConditions,
     });
 
     return successResponseData(
@@ -247,10 +245,11 @@ const getOrderByUserId = async (req, res) => {
 
     if (status === "failed") {
       whereConditions = {
-        [Op.and]: [
-          { or_status_shipping: "cancelled" },
+        [Op.or]: [
           { or_status_payment: "cancelled" },
+          { or_status_payment: "expired" },
         ],
+        [Op.and]: [{ or_status_shipping: "cancelled" }],
       };
     }
 
