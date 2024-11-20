@@ -29,6 +29,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
+      or_name_recipient: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       or_site: {
         type: DataTypes.STRING,
         allowNull: false,

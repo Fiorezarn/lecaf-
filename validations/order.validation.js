@@ -11,6 +11,7 @@ const bodyValidation = (req, res, next) => {
     typeOrder: Joi.string().required(),
     totalPrice: Joi.number().required(),
     menuJson: Joi.string().required(),
+    nameRecipient: Joi.string().required(),
   });
   const validationError = schema.validate(req.body).error;
   if (validationError) {

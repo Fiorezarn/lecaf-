@@ -40,7 +40,7 @@ app.use("/dashboard", dashboardRouter);
 
 if (require.main === module) {
   app.listen(port, () => {
-    console.log(`server runing in ${baseUrl}:${port}`);
+    console.log(`server runing in ${baseUrl}`);
   });
 }
 

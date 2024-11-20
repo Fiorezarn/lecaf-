@@ -18,13 +18,15 @@ const { Op } = require("sequelize");
 
 const createOrder = async (req, res) => {
   try {
-    const { userId, site, typeOrder, totalPrice, menuJson } = req.body;
+    const { userId, site, typeOrder, totalPrice, menuJson, nameRecipient } =
+      req.body;
     const statusShipping = !isNaN(Number(site)) ? "delivered" : "ongoing";
     const maps = isNaN(Number(site))
       ? await generateLatLongFromAddress(site)
       : site;
     const order = await Order.create({
       or_us_id: userId,
+      or_name_recipient: nameRecipient,
       or_site: site,
       or_latitude: maps.latitude,
       or_longitude: maps.longitude,

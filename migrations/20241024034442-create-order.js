@@ -18,6 +18,10 @@ module.exports = {
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
       },
+      or_name_recipient: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       or_site: {
         type: Sequelize.STRING,
         allowNull: false,
