@@ -260,7 +260,7 @@ describe("Cart Controllers", () => {
       jest.restoreAllMocks();
     });
     it("should return 200 and update the quantity successfully", async () => {
-      id = 5;
+      const id = 5;
       const mockBody = { quantity: 10 };
 
       Cart.findOne = jest.fn().mockResolvedValue({

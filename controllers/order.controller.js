@@ -205,7 +205,7 @@ const getAllOrder = async (req, res) => {
 
     return successResponseData(
       res,
-      `Success get all order pending`,
+      `Success get all order ${status ? status : ""}`,
       orders,
       200
     );
@@ -335,7 +335,7 @@ const getOrderByUserId = async (req, res) => {
     await Promise.all(promises);
     return successResponseData(
       res,
-      `Success get all order with user with id ${id}`,
+      `Success get all order ${status || ""} with user id ${id}`,
       {
         orders,
         origins: {
@@ -402,13 +402,13 @@ const updateStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
   try {
-    const order = await Order.findOne({ where: { or_id: id } });
+    const order = await Order.findOne({
+      attributes: ["or_id"],
+      where: { or_id: id },
+    });
+
     if (!order) {
-      return res.status(404).send({
-        status: "failed",
-        code: 404,
-        message: "Order not found",
-      });
+      return errorClientResponse(res, `Order with id ${id} not found!`, 404);
     }
     await Order.update(
       {
@@ -416,7 +416,7 @@ const updateStatus = async (req, res) => {
       },
       { where: { or_id: id } }
     );
-    return successResponseData(res, "Success update status", order, 200);
+    return successResponse(res, "Success update status", 200);
   } catch (error) {
     return errorServerResponse(res, error.message);
   }

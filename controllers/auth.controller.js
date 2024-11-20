@@ -26,6 +26,8 @@ const Register = async (req, res) => {
       newUser.us_id,
       newUser.us_email,
       newUser.us_role,
+      newUser.us_fullname,
+      newUser.us_username,
       "VERIFICATION",
       process.env.JWT_EXPIRES_IN
     );
@@ -52,6 +54,7 @@ const Login = async (req, res) => {
       attributes: [
         "us_id",
         "us_username",
+        "us_fullname",
         "us_email",
         "us_phonenumber",
         "us_active",
@@ -85,6 +88,8 @@ const Login = async (req, res) => {
       users.us_id,
       users.us_email,
       users.us_role,
+      users.us_fullname,
+      users.us_username,
       "LOGIN",
       process.env.JWT_EXPIRES_IN
     );
@@ -95,7 +100,7 @@ const Login = async (req, res) => {
       httpOnly: false,
     };
 
-    return res.cookie("user", JSON.stringify(users), options).status(200).send({
+    return res.cookie("user_leecafe", loginToken, options).status(200).send({
       status: "succes",
       code: 200,
       data: users,
@@ -151,17 +156,19 @@ const loginWithGoogle = async (req, res) => {
       user.us_id,
       user.us_email,
       user.us_role,
+      user.us_fullname,
+      user.us_username,
       "LOGIN GOOGLE",
       process.env.JWT_EXPIRES_IN
     );
-
     delete user.dataValues.us_password;
     user.dataValues.token = loginToken;
     const options = {
       expires: new Date(Number(new Date()) + 24 * 60 * 60 * 1000),
       httpOnly: false,
     };
-    return res.cookie("user", JSON.stringify(user), options).status(200).send({
+
+    return res.cookie("user_leecafe", loginToken, options).status(200).send({
       status: "succes",
       code: 200,
       data: user,
@@ -189,6 +196,8 @@ const sendEmailForgotPassword = async (req, res) => {
       user.us_id,
       user.us_email,
       user.us_role,
+      user.us_fullname,
+      user.us_username,
       "VERIFICATION",
       process.env.JWT_EXPIRES_IN
     );
@@ -225,6 +234,8 @@ const sendEmailVerificationManual = async (req, res) => {
       user.us_id,
       user.us_email,
       user.us_role,
+      user.us_fullname,
+      user.us_username,
       "VERIFICATION",
       process.env.JWT_EXPIRES_IN
     );
@@ -267,7 +278,7 @@ const forgotPassword = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
-    res.clearCookie("user", {
+    res.clearCookie("user_leecafe", {
       httpOnly: false,
     });
     return successResponse(res, "Logout success!");

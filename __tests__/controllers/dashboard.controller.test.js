@@ -5,6 +5,7 @@ const { Order, User, Menu } = require("@/models");
 jest.mock("@/models", () => ({
   Order: {
     count: jest.fn(),
+    sum: jest.fn(),
   },
   User: {
     count: jest.fn(),
@@ -23,10 +24,11 @@ describe("Count Data Endpoint", () => {
     jest.restoreAllMocks();
   });
 
-  it("should return 200 and counts of order, user, and menu", async () => {
+  it("should return 200 and counts of order, user, menu, and revenue", async () => {
     Order.count.mockResolvedValue(5);
     User.count.mockResolvedValue(10);
     Menu.count.mockResolvedValue(15);
+    Order.sum.mockResolvedValue(470000); // Mock nilai revenue
 
     const response = await request(app).get("/dashboard");
 
@@ -38,6 +40,7 @@ describe("Count Data Endpoint", () => {
       order: 5,
       user: 10,
       menu: 15,
+      revenue: 470000,
     });
   });
 

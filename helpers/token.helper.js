@@ -5,9 +5,24 @@ const path = require("path");
 const nodemailer = require("nodemailer");
 const handlebars = require("handlebars");
 
-const generateToken = (id, email, role, name, expiresIn) => {
+const generateToken = (
+  id,
+  email,
+  role,
+  fullname,
+  username,
+  name,
+  expiresIn
+) => {
   const token = jwt.sign(
-    { us_id: id, us_email: email, us_role: role, name: name },
+    {
+      us_id: id,
+      us_email: email,
+      us_role: role,
+      us_fullname: fullname,
+      us_username: username,
+      name: name,
+    },
     process.env.JWT_SECRET,
     {
       expiresIn: expiresIn,
@@ -23,7 +38,6 @@ const verifyEmail = async (req, res) => {
     await User.update({ us_active: true }, { where: { us_id: decoded.us_id } });
     return res.redirect(`${process.env.BASE_URL_FRONTEND}/verify-success`);
   } catch (error) {
-    console.log(error);
     return res.redirect(`${process.env.BASE_URL_FRONTEND}/verify-failed`);
   }
 };

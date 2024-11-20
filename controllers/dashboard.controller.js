@@ -11,7 +11,10 @@ const countData = async (req, res) => {
     const order = await Order.count();
     const user = await User.count();
     const menu = await Menu.count();
-    const data = { order, user, menu };
+    const revenue = await Order.sum("or_total_price", {
+      where: { or_status_payment: "settlement" },
+    });
+    const data = { order, user, menu, revenue };
     return successResponseData(res, "Success get data", data, 200);
   } catch (error) {
     return errorServerResponse(res, error.message);
