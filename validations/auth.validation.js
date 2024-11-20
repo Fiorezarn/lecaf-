@@ -7,12 +7,54 @@ const {
 
 const bodyValidation = (req, res, next) => {
   const schema = Joi.object({
-    fullname: Joi.string().required(),
-    username: Joi.string().required(),
-    email: Joi.string().required(),
+    fullname: Joi.string().min(5).max(20).required(),
+    username: Joi.string().min(5).max(10).required(),
+    email: Joi.string().email().required(),
     phonenumber: Joi.string().min(12).max(12),
-    password: Joi.string().min(8).alphanum().required(),
+    password: Joi.string()
+      .min(8)
+      .max(30)
+      .pattern(/(?=.*[a-z])/, "lowercase letter")
+      .pattern(/(?=.*[A-Z])/, "uppercase letter")
+      .pattern(/(?=.*\d)/, "number")
+      .pattern(/(?=.*[!@#$%^&])/, "special character")
+      .required()
+      .messages({
+        "string.base": "Password must be a text string.",
+        "string.empty": "Password cannot be empty.",
+        "string.min": "Password must be at least {#limit} characters long.",
+        "string.max": "Password cannot exceed {#limit} characters.",
+        "string.pattern.name": "Password must include at least one {#name}.",
+        "any.required": "Password is a required field.",
+      }),
   });
+  const validationError = schema.validate(req.body).error;
+  if (validationError) {
+    return errorClientResponse(res, validationError.details[0].message);
+  }
+  next();
+};
+
+const resetPasswordValidation = (req, res, next) => {
+  const schema = Joi.object({
+    password: Joi.string()
+      .min(8)
+      .max(30)
+      .pattern(/(?=.*[a-z])/, "lowercase letter")
+      .pattern(/(?=.*[A-Z])/, "uppercase letter")
+      .pattern(/(?=.*\d)/, "number")
+      .pattern(/(?=.*[!@#$%^&])/, "special character")
+      .required()
+      .messages({
+        "string.base": "Password must be a text string.",
+        "string.empty": "Password cannot be empty.",
+        "string.min": "Password must be at least {#limit} characters long.",
+        "string.max": "Password cannot exceed {#limit} characters.",
+        "string.pattern.name": "Password must include at least one {#name}.",
+        "any.required": "Password is a required field.",
+      }),
+  });
+
   const validationError = schema.validate(req.body).error;
   if (validationError) {
     return errorClientResponse(res, validationError.details[0].message);
@@ -43,4 +85,4 @@ const checkDuplicate = async (req, res, next) => {
   }
 };
 
-module.exports = { bodyValidation, checkDuplicate };
+module.exports = { bodyValidation, checkDuplicate, resetPasswordValidation };

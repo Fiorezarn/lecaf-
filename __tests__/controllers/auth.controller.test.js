@@ -81,7 +81,7 @@ describe("Auth Controller", () => {
       "Verify Your Email Address",
       "Verification Email",
       "mockVerificationToken",
-      `${process.env.BASE_URL}:${process.env.PORT}/auth/verify-email`
+      `${process.env.BASE_URL}/auth/verify-email`
     );
   });
 

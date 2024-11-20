@@ -38,7 +38,7 @@ const Register = async (req, res) => {
       "Verify Your Email Address",
       "Verification Email",
       verifyToken,
-      `${process.env.BASE_URL}:${process.env.PORT}/auth/verify-email`
+      `${process.env.BASE_URL}/auth/verify-email`
     );
     delete newUser.dataValues.us_password;
     return successResponseData(res, "Register success!", newUser, 201);
@@ -246,7 +246,7 @@ const sendEmailVerificationManual = async (req, res) => {
       "Verify Your Email Address",
       "Verification Email",
       verifyToken,
-      `${process.env.BASE_URL}:${process.env.PORT}/auth/verify-email`
+      `${process.env.BASE_URL}/auth/verify-email`
     );
 
     return successResponse(res, "Link have been send to your email!");

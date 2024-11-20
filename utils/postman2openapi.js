@@ -10,7 +10,7 @@ const axios = require("axios");
   const openapi = await transpile(response.data.collection);
   openapi.servers = [
     {
-      url: `${process.env.BASE_URL}:${process.env.PORT}`,
+      url: `${process.env.BASE_URL}}`,
     },
   ];
   fs.writeFile(
