@@ -5,6 +5,9 @@ module.exports = {
   coverageDirectory: "coverage",
   collectCoverage: true,
   collectCoverageFrom: [
+    "helpers/**/*.js",
+    "services/**/*.js",
+    "validations/**/*.js",
     "controllers/**/*.js",
     "routes/**/*.js",
     "!**/app.js",

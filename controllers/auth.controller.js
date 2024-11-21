@@ -102,6 +102,7 @@ const Login = async (req, res) => {
 
     return res.cookie("user_leecafe", loginToken, options).status(200).send({
       status: "succes",
+      message: "Login success!",
       code: 200,
       data: users,
     });
@@ -170,6 +171,7 @@ const loginWithGoogle = async (req, res) => {
 
     return res.cookie("user_leecafe", loginToken, options).status(200).send({
       status: "succes",
+      message: "Login success!",
       code: 200,
       data: user,
     });
