@@ -19,8 +19,15 @@ const haversine = require("haversine-distance");
 
 const createOrder = async (req, res) => {
   try {
-    const { userId, site, typeOrder, totalPrice, menuJson, nameRecipient } =
-      req.body;
+    const {
+      userId,
+      site,
+      typeOrder,
+      totalPrice,
+      menuJson,
+      nameRecipient,
+      isOrderNow,
+    } = req.body;
     const statusShipping = !isNaN(Number(site)) ? "delivered" : "ongoing";
     const maps = isNaN(Number(site))
       ? await generateLatLongFromAddress(site)
@@ -29,10 +36,11 @@ const createOrder = async (req, res) => {
       latitude: process.env.STORE_LATITUDE,
       longitude: process.env.STORE_LONGITUDE,
     };
+
     const destinations = { latitude: maps.latitude, longitude: maps.longitude };
     const distance = haversine(origins, destinations);
-    if (distance > 10000) {
-      return errorClientResponse(res, "Distance must be less than 10km");
+    if (distance > 10e3 && distance < 1e3) {
+      return errorClientResponse(res, `Distance must be between 1km and 10km.`);
     }
 
     const order = await Order.create({
@@ -45,14 +53,18 @@ const createOrder = async (req, res) => {
       or_total_price: Number(totalPrice),
       or_status_shipping: statusShipping,
     });
+
     const orderDetail = await OrderDetail.create({
       od_or_id: order.or_id,
       od_mn_json: menuJson,
     });
-    if (order && orderDetail) {
-      await Cart.destroy({
-        where: { cr_us_id: userId },
-      });
+
+    if (!isOrderNow) {
+      if (order && orderDetail) {
+        await Cart.destroy({
+          where: { cr_us_id: userId },
+        });
+      }
     }
     const data = { order, orderDetail };
     return successResponseData(res, "Order created successfully", data, 201);
@@ -218,7 +230,7 @@ const getAllOrder = async (req, res) => {
 
     return successResponseData(
       res,
-      `Success get all order ${status ? status : ""}`,
+      `Success get all order ${status || ""}`,
       orders,
       200
     );
