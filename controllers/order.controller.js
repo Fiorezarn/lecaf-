@@ -15,6 +15,7 @@ const {
   midtransCancelTransaction,
 } = require("@/services/midtrans.service");
 const { Op } = require("sequelize");
+const haversine = require("haversine-distance");
 
 const createOrder = async (req, res) => {
   try {
@@ -24,6 +25,16 @@ const createOrder = async (req, res) => {
     const maps = isNaN(Number(site))
       ? await generateLatLongFromAddress(site)
       : site;
+    const origins = {
+      latitude: process.env.STORE_LATITUDE,
+      longitude: process.env.STORE_LONGITUDE,
+    };
+    const destinations = { latitude: maps.latitude, longitude: maps.longitude };
+    const distance = haversine(origins, destinations);
+    if (distance > 10000) {
+      return errorClientResponse(res, "Distance must be less than 10km");
+    }
+
     const order = await Order.create({
       or_us_id: userId,
       or_name_recipient: nameRecipient,
