@@ -5,7 +5,7 @@ const {
   errorServerResponse,
   errorClientResponse,
 } = require("@/helpers/response.helper");
-const { generatePolyline } = require("@/helpers/maps.helper");
+const { generatePolyline, generateDistance } = require("@/helpers/maps.helper");
 
 const createPolyline = async (req, res) => {
   try {
@@ -16,4 +16,13 @@ const createPolyline = async (req, res) => {
   }
 };
 
-module.exports = { createPolyline };
+const createDistance = async (req, res) => {
+  try {
+    const response = await generateDistance(req.body);
+    return successResponseData(res, "Success create distance", response);
+  } catch (error) {
+    return errorServerResponse(res, error.message);
+  }
+};
+
+module.exports = { createPolyline, createDistance };

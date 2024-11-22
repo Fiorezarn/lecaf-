@@ -34,6 +34,14 @@ module.exports = {
         type: Sequelize.FLOAT,
         allowNull: true,
       },
+      or_note: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      or_phonenumber: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       or_type_order: {
         type: Sequelize.ENUM("Dine-in", "Delivery"),
         allowNull: false,

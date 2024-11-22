@@ -27,6 +27,8 @@ const createOrder = async (req, res) => {
       menuJson,
       nameRecipient,
       isOrderNow,
+      note,
+      phoneNumber,
     } = req.body;
     const statusShipping = !isNaN(Number(site)) ? "delivered" : "ongoing";
     const maps = isNaN(Number(site))
@@ -58,6 +60,8 @@ const createOrder = async (req, res) => {
       or_type_order: typeOrder,
       or_total_price: Number(totalPrice),
       or_status_shipping: statusShipping,
+      or_note: note,
+      or_phonenumber: phoneNumber,
     });
 
     const orderDetail = await OrderDetail.create({

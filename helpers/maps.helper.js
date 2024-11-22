@@ -1,4 +1,5 @@
 const axios = require("axios");
+const haversine = require("haversine-distance");
 
 const generateLatLongFromAddress = async (address) => {
   try {
@@ -54,4 +55,22 @@ const generatePolyline = async (data) => {
   }
 };
 
-module.exports = { generateLatLongFromAddress, generatePolyline };
+const generateDistance = (data) => {
+  try {
+    const origins = {
+      latitude: process.env.STORE_LATITUDE,
+      longitude: process.env.STORE_LONGITUDE,
+    };
+    const destinations = { latitude: data.latitude, longitude: data.longitude };
+    const distance = haversine(origins, destinations);
+    return distance;
+  } catch (error) {
+    return error;
+  }
+};
+
+module.exports = {
+  generateLatLongFromAddress,
+  generatePolyline,
+  generateDistance,
+};
