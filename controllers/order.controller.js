@@ -39,8 +39,14 @@ const createOrder = async (req, res) => {
 
     const destinations = { latitude: maps.latitude, longitude: maps.longitude };
     const distance = haversine(origins, destinations);
-    if (distance > 10e3 && distance < 1e3) {
-      return errorClientResponse(res, `Distance must be between 1km and 10km.`);
+    if (distance > 10000 || distance < 1000) {
+      const km = distance / 1000;
+      return errorClientResponse(
+        res,
+        `Distance must be between 1 km and 10 km. Your distance is ${km.toFixed(
+          2
+        )} km`
+      );
     }
 
     const order = await Order.create({
@@ -204,6 +210,7 @@ const getAllOrder = async (req, res) => {
         "or_us_id",
         "or_site",
         "or_longitude",
+        "or_name_recipient",
         "or_latitude",
         "or_type_order",
         "or_total_price",
@@ -286,6 +293,7 @@ const getOrderByUserId = async (req, res) => {
             "or_id",
             "or_us_id",
             "or_site",
+            "or_name_recipient",
             "or_longitude",
             "or_latitude",
             "or_type_order",
