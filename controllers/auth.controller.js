@@ -49,7 +49,7 @@ const Register = async (req, res) => {
 
 const Login = async (req, res) => {
   try {
-    const { input, password } = req.body;
+    const { input, password, rememberme } = req.body;
     const users = await User.findOne({
       attributes: [
         "us_id",
@@ -90,12 +90,14 @@ const Login = async (req, res) => {
       users.us_fullname,
       users.us_username,
       "LOGIN",
-      process.env.JWT_EXPIRES_IN
+      rememberme ? "30d" : process.env.JWT_EXPIRES_IN
     );
     delete users.dataValues.us_password;
     users.dataValues.token = loginToken;
     const options = {
-      expires: new Date(Number(new Date()) + 24 * 60 * 60 * 1000),
+      expires: rememberme
+        ? new Date(Number(new Date()) + 30 * 24 * 60 * 60 * 1000)
+        : new Date(Number(new Date()) + 24 * 60 * 60 * 1000),
       httpOnly: false,
     };
 

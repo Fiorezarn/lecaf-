@@ -10,7 +10,7 @@ const bodyValidation = (req, res, next) => {
     fullname: Joi.string().min(5).max(20).required(),
     username: Joi.string().min(5).max(10).required(),
     email: Joi.string().email().required(),
-    phonenumber: Joi.string().min(12).max(12),
+    phonenumber: Joi.string().min(12).max(15),
     password: Joi.string()
       .min(8)
       .max(30)
