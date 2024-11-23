@@ -61,9 +61,14 @@ const generateDistance = (data) => {
       latitude: process.env.STORE_LATITUDE,
       longitude: process.env.STORE_LONGITUDE,
     };
-    const destinations = { latitude: data.latitude, longitude: data.longitude };
+    const destinations = {
+      latitude: data.data.latitude,
+      longitude: data.data.longitude,
+    };
     const distance = haversine(origins, destinations);
-    return distance;
+    const km = (distance / 1000).toFixed(2);
+
+    return km;
   } catch (error) {
     return error;
   }

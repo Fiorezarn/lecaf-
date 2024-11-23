@@ -71,16 +71,15 @@ const Login = async (req, res) => {
       );
     }
 
+    if (!users.us_active) {
+      return errorClientResponse(res, "Please Verify Your Email!", 401, {
+        type: "notverify",
+      });
+    }
     const validPassword = await bcrypt.compare(password, users.us_password);
     if (!validPassword) {
       return errorClientResponse(res, "Invalid Password", 401, {
         type: "invalidpassword",
-      });
-    }
-
-    if (!users.us_active) {
-      return errorClientResponse(res, "Please Verify Your Email!", 401, {
-        type: "notverify",
       });
     }
 

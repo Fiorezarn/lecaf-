@@ -85,7 +85,7 @@ const createOrder = async (req, res) => {
 
 const createSnapTransaction = async (req, res) => {
   const { id } = req.params;
-  const { amount, email } = req.body;
+  const { amount, email, feeShipping } = req.body;
   const orderIdMidtrans = `LeCafe-${Date.now()}`;
   try {
     const order = await Order.findOne({
@@ -139,6 +139,7 @@ const createSnapTransaction = async (req, res) => {
       200
     );
   } catch (error) {
+    console.log(error);
     return errorServerResponse(res, error.message);
   }
 };
@@ -298,6 +299,7 @@ const getOrderByUserId = async (req, res) => {
             "or_us_id",
             "or_site",
             "or_name_recipient",
+            "or_phonenumber",
             "or_longitude",
             "or_latitude",
             "or_type_order",
@@ -306,6 +308,7 @@ const getOrderByUserId = async (req, res) => {
             "or_status_shipping",
             "or_platform_id",
             "or_payment_info",
+            "or_note",
             "createdAt",
           ],
           model: Order,
