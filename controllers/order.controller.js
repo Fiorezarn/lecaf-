@@ -41,11 +41,11 @@ const createOrder = async (req, res) => {
 
     const destinations = { latitude: maps.latitude, longitude: maps.longitude };
     const distance = haversine(origins, destinations);
-    if (distance > 10000 || distance < 1000) {
+    if (distance > 20000 || distance < 1000) {
       const km = distance / 1000;
       return errorClientResponse(
         res,
-        `Distance must be between 1 km and 10 km. Your distance is ${km.toFixed(
+        `Distance must be between 1 km and 20 km. Your distance is ${km.toFixed(
           2
         )} km`
       );

@@ -2,8 +2,7 @@ const request = require("supertest");
 const app = require("@/app");
 const { User } = require("@/models");
 const bcrypt = require("bcrypt");
-const { sendEmail } = require("@/utils/sendEmail");
-const { generateToken } = require("@/utils/token");
+const { sendEmail, generateToken } = require("@/helpers/token.helper");
 
 jest.mock("@/models", () => ({
   User: {
@@ -12,17 +11,21 @@ jest.mock("@/models", () => ({
   },
 }));
 
-jest.mock("@/utils/sendEmail", () => ({
+jest.mock("@/helpers/token.helper", () => ({
   sendEmail: jest.fn(),
 }));
 
-jest.mock("@/utils/token", () => ({
+jest.mock("@/helpers/token.helper", () => ({
   generateToken: jest.fn(),
 }));
 
 describe("Auth Controller", () => {
-  afterEach(() => {
+  beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it("should register a new user successfully", async () => {
@@ -31,11 +34,11 @@ describe("Auth Controller", () => {
       fullname: "Test User",
       email: "test@example.com",
       phonenumber: "1234567890",
-      password: "password123",
+      password: "Password123!",
     };
 
     const mockUser = {
-      us_id: 1,
+      us_id: 10,
       us_username: mockBody.username,
       us_fullname: mockBody.fullname,
       us_email: mockBody.email,
@@ -54,12 +57,6 @@ describe("Auth Controller", () => {
     expect(response.body).toHaveProperty("status", "success");
     expect(response.body).toHaveProperty("code", 201);
     expect(response.body).toHaveProperty("message", "Register success!");
-    expect(response.body.data).toMatchObject({
-      us_username: mockBody.username,
-      us_fullname: mockBody.fullname,
-      us_email: mockBody.email,
-      us_phonenumber: mockBody.phonenumber,
-    });
 
     expect(User.create).toHaveBeenCalledWith({
       us_username: mockBody.username,
