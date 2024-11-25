@@ -85,7 +85,7 @@ const createOrder = async (req, res) => {
 
 const createSnapTransaction = async (req, res) => {
   const { id } = req.params;
-  const { amount, email, feeShipping } = req.body;
+  const { amount, email } = req.body;
   const orderIdMidtrans = `LeCafe-${Date.now()}`;
   try {
     const order = await Order.findOne({
@@ -350,12 +350,23 @@ const getOrderByUserId = async (req, res) => {
             const result = await midtransVerifyTransaction(
               order.or_platform_id
             );
+            console.log(result, "ini result");
+
             let status = "pending";
             if (
               result.transaction_status === "settlement" ||
               result.transaction_status === "success"
             ) {
+              console.log(order, "ini yang settlement");
               status = "settlement";
+              if (order.or_status_payment === "pending") {
+                await Order.update(
+                  {
+                    or_status_payment: status,
+                  },
+                  { where: { or_id: order.or_id } }
+                );
+              }
             }
             if (result.transaction_status === "cancel") status = "cancelled";
             if (result.transaction_status === "expire") status = "expired";
