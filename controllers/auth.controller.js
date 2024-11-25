@@ -102,7 +102,7 @@ const Login = async (req, res) => {
     };
 
     return res.cookie("user_leecafe", loginToken, options).status(200).send({
-      status: "succes",
+      status: "success",
       message: "Login success!",
       code: 200,
       data: users,
@@ -171,7 +171,7 @@ const loginWithGoogle = async (req, res) => {
     };
 
     return res.cookie("user_leecafe", loginToken, options).status(200).send({
-      status: "succes",
+      status: "success",
       message: "Login success!",
       code: 200,
       data: user,
@@ -188,11 +188,11 @@ const sendEmailForgotPassword = async (req, res) => {
       where: { us_email: email },
     });
     if (!user) {
-      return res.status(400).send({
-        status: "failed",
-        code: 400,
-        message: `User with email ${email} not found`,
-      });
+      return errorClientResponse(
+        res,
+        `User with email ${email} not found`,
+        404
+      );
     }
 
     const verifyToken = generateToken(
@@ -226,11 +226,11 @@ const sendEmailVerificationManual = async (req, res) => {
       where: { us_email: email },
     });
     if (!user) {
-      return res.status(400).send({
-        status: "failed",
-        code: 400,
-        message: `User with email ${email} not found`,
-      });
+      return errorClientResponse(
+        res,
+        `User with email ${email} not found`,
+        404
+      );
     }
 
     const verifyToken = generateToken(
