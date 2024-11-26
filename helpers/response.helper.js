@@ -1,3 +1,4 @@
+//response helper
 const successResponseData = (res, message, data, code = 201) => {
   return res.status(code).send({
     status: "success",

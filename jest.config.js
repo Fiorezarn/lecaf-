@@ -19,7 +19,12 @@ module.exports = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
   },
-  setupFiles: ["dotenv/config", "module-alias/register", "swagger-ui-express"],
+  setupFiles: [
+    "dotenv/config",
+    "module-alias/register",
+    "swagger-ui-express",
+    "http-errors",
+  ],
   coverageThreshold: {
     global: {
       branches: 80,

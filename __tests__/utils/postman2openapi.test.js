@@ -1,94 +1,88 @@
-const fs = require("fs");
-const axios = require("axios");
+const fs = require("fs").promises;
 const { transpile } = require("postman2openapi");
+const axios = require("axios");
+const { generateOpenAPI } = require("@/utils/postman2openapi");
 
-jest.mock("fs");
-jest.mock("axios");
-jest.mock("postman2openapi");
-jest.mock("dotenv", () => ({
-  config: jest.fn(),
+jest.mock("fs", () => ({
+  promises: {
+    writeFile: jest.fn(),
+  },
 }));
+jest.mock("axios");
+jest.mock("postman2openapi", () => ({
+  transpile: jest.fn(),
+}));
+console.log = jest.fn();
 
-describe("Postman to OpenAPI Conversion", () => {
+describe("generateOpenAPI", () => {
+  const mockResponse = {
+    data: {
+      collection: {
+        info: { name: "Test Collection" },
+        item: [],
+      },
+    },
+  };
+
   beforeEach(() => {
-    jest.resetAllMocks();
-    process.env.POSTMAN_API_URL = "https://api.postman.com";
-    process.env.POSTMAN_ACCESS_KEY = "test_access_key";
-    process.env.BASE_URL = "https://api.example.com";
+    jest.clearAllMocks();
+    axios.get.mockResolvedValue(mockResponse);
+    transpile.mockReturnValue({
+      openapi: "3.0.0",
+      info: { title: "Test API", version: "1.0.0" },
+      paths: {},
+    });
+    fs.writeFile.mockResolvedValue();
   });
 
-  it("should successfully convert Postman collection to OpenAPI", async () => {
-    const mockPostmanCollection = {};
-    const mockOpenAPISpec = {};
-
-    axios.get.mockResolvedValue({
-      data: { collection: mockPostmanCollection },
-    });
-    transpile.mockResolvedValue(mockOpenAPISpec);
-
-    await require("./postman2openapi.test");
-
+  it("should fetch Postman collection, transpile to OpenAPI, and write to a file", async () => {
+    await generateOpenAPI();
     expect(axios.get).toHaveBeenCalledWith(
-      "https://api.postman.com?access_key=test_access_key"
+      `${process.env.POSTMAN_API_URL}?access_key=${process.env.POSTMAN_ACCESS_KEY}`
     );
-    expect(transpile).toHaveBeenCalledWith(mockPostmanCollection);
+    expect(transpile).toHaveBeenCalledWith(mockResponse.data.collection);
     expect(fs.writeFile).toHaveBeenCalledWith(
       "./config/swagger-output.json",
       JSON.stringify(
         {
-          ...mockOpenAPISpec,
-          servers: [{ url: "https://api.example.com" }],
+          openapi: "3.0.0",
+          info: { title: "Test API", version: "1.0.0" },
+          paths: {},
+          servers: [{ url: process.env.BASE_URL }],
         },
         null,
         2
-      ),
-      expect.any(Function)
+      )
+    );
+    expect(console.log).toHaveBeenCalledWith(
+      "OpenAPI JSON file has been updated successfully."
     );
   });
 
-  it("should handle file writing error", async () => {
-    const mockPostmanCollection = {};
-    const mockOpenAPISpec = {};
-
-    axios.get.mockResolvedValue({
-      data: { collection: mockPostmanCollection },
-    });
-    transpile.mockResolvedValue(mockOpenAPISpec);
-    fs.writeFile.mockImplementation((path, data, callback) => {
-      callback(new Error("File write error"));
-    });
-
-    console.log = jest.fn();
-
-    await require("./postman2openapi.test");
-
-    expect(console.log).toHaveBeenCalledWith(expect.any(Error));
+  it("should throw an error if API call fails", async () => {
+    const mockError = new Error("API Error");
+    axios.get.mockRejectedValue(mockError);
+    await expect(generateOpenAPI()).rejects.toThrow("API Error");
+    expect(transpile).not.toHaveBeenCalled();
+    expect(fs.writeFile).not.toHaveBeenCalled();
+    expect(console.log).toHaveBeenCalledWith(expect.any(String));
   });
 
-  it("should handle API request error", async () => {
-    axios.get.mockRejectedValue(new Error("API request failed"));
-
-    console.error = jest.fn();
-
-    await require("./postman2openapi.test");
-
-    expect(console.error).toHaveBeenCalledWith(expect.any(Error));
-  });
-
-  it("should handle transpile error", async () => {
-    const mockPostmanCollection = {
-      /* mock Postman collection data */
-    };
-
-    axios.get.mockResolvedValue({
-      data: { collection: mockPostmanCollection },
+  it("should throw an error if transpile fails", async () => {
+    const mockError = new Error("Transpile Error");
+    transpile.mockImplementation(() => {
+      throw mockError;
     });
-    transpile.mockRejectedValue(new Error("Transpile error"));
-
-    console.error = jest.fn();
-
-    await require("./postman2openapi.test");
-
-    expect(console.error).toHaveBeenCalledWith(expect.any(Error));
+    await expect(generateOpenAPI()).rejects.toThrow("Transpile Error");
+    expect(fs.writeFile).not.toHaveBeenCalled();
+    expect(console.log).toHaveBeenCalledWith(expect.any(String));
+  });
+  it("should throw an error if writing the file fails", async () => {
+    const mockError = new Error("Write File Error");
+    fs.writeFile.mockRejectedValue(mockError);
+    await expect(generateOpenAPI()).rejects.toThrow("Write File Error");
+    expect(axios.get).toHaveBeenCalled();
+    expect(transpile).toHaveBeenCalled();
+    expect(console.log).toHaveBeenCalledWith(expect.any(String));
   });
 });

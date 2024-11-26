@@ -21,9 +21,7 @@ const midtransCreateSnapTransaction = async (transactionDetails) => {
     );
     return response.data;
   } catch (error) {
-    throw new Error(
-      error.response.data.message || "Failed to create snap transaction"
-    );
+    throw new Error("Failed to create snap transaction");
   }
 };
 
@@ -38,10 +36,7 @@ const midtransVerifyTransaction = async (orderId) => {
     });
     return response.data;
   } catch (error) {
-    console.log(error.response);
-    throw new Error(
-      error.response.data.message || "Failed to verify transaction"
-    );
+    throw new Error("Failed to verify transaction");
   }
 };
 const midtransCancelTransaction = async (orderId) => {
@@ -61,9 +56,7 @@ const midtransCancelTransaction = async (orderId) => {
     );
     return response.data;
   } catch (error) {
-    throw new Error(
-      error.response.data.message || "Failed to Cancel Transaction"
-    );
+    throw new Error("Failed to Cancel Transaction");
   }
 };
 

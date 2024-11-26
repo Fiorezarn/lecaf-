@@ -71,11 +71,6 @@ describe("Menu Controllers", () => {
           contentType: "image/jpeg",
         });
 
-      if (response.status !== 201) {
-        console.error("Response body:", response.body);
-        console.error("Response status:", response.status);
-      }
-
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty("code", 201);
       expect(response.body).toHaveProperty("status", "success");
@@ -90,14 +85,125 @@ describe("Menu Controllers", () => {
         })
       );
     });
-
-    it("should return 400 if image is not provided", async () => {
+    it("should return 400 if menu already exists", async () => {
       const mockMenu = {
         name: "Cafe Latte",
         price: 30000,
         description: "Cafe Latte is a coffee-based drink...",
         category: "coffee",
       };
+
+      Menu.findOne.mockResolvedValue({
+        mn_name: "Cafe Latte",
+        mn_price: 30000,
+      });
+
+      const mockImageUpload = {
+        secure_url: "https://example.com/image.jpg",
+      };
+
+      uploadImage.mockResolvedValue(mockImageUpload);
+
+      Menu.create.mockResolvedValue({
+        id: 1,
+        mn_name: mockMenu.name,
+        mn_price: mockMenu.price,
+        mn_desc: mockMenu.description,
+        mn_category: mockMenu.category,
+        mn_image: mockImageUpload.secure_url,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const response = await request(app)
+        .post("/menu")
+        .field("name", mockMenu.name)
+        .field("price", mockMenu.price)
+        .field("description", mockMenu.description)
+        .field("category", mockMenu.category)
+        .attach("image", Buffer.from("mock image"), {
+          filename: "image.jpg",
+          contentType: "image/jpeg",
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty("code", 400);
+      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body).toHaveProperty(
+        "message",
+        "Menu with Cafe Latte already exists"
+      );
+    });
+    it("should return 500 but incorrect file type", async () => {
+      const mockMenu = {
+        name: "Cafe Latte",
+        price: 30000,
+        description: "Cafe Latte is a coffee-based drink...",
+        category: "coffee",
+      };
+
+      const mockImageUpload = {
+        secure_url: "https://example.com/image.webp",
+      };
+
+      uploadImage.mockResolvedValue(mockImageUpload);
+
+      Menu.create.mockResolvedValue({
+        id: 1,
+        mn_name: mockMenu.name,
+        mn_price: mockMenu.price,
+        mn_desc: mockMenu.description,
+        mn_category: mockMenu.category,
+        mn_image: mockImageUpload.secure_url,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const response = await request(app)
+        .post("/menu")
+        .field("name", mockMenu.name)
+        .field("price", mockMenu.price)
+        .field("description", mockMenu.description)
+        .field("category", mockMenu.category)
+        .attach("image", Buffer.from("mock image"), {
+          filename: "image.webp",
+          contentType: "application/octet-stream",
+        });
+
+      expect(response.status).toBe(500);
+    });
+    it("should return 500 if menu body validation fails", async () => {
+      const mockMenu = {
+        price: 30000,
+        description: "Cafe Latte is a coffee-based drink...",
+        category: "coffee",
+      };
+
+      const response = await request(app)
+        .post("/menu")
+        .field("price", mockMenu.price)
+        .field("description", mockMenu.description)
+        .field("category", mockMenu.category)
+        .attach("image", Buffer.from("mock image"), {
+          filename: "image.jpg",
+          contentType: "image/jpeg",
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty("code", 400);
+      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body.message).toBe('"name" is required');
+    });
+
+    it("should return 400 if image is not provided", async () => {
+      const mockMenu = {
+        name: "Cafe Cino",
+        price: 30000,
+        description: "Cafe Latte is a coffee-based drink...",
+        category: "coffee",
+      };
+
+      Menu.findOne.mockResolvedValue(null);
 
       const response = await request(app)
         .post("/menu")
@@ -111,14 +217,50 @@ describe("Menu Controllers", () => {
       expect(response.body).toHaveProperty("status", "error");
       expect(response.body).toHaveProperty("message", "image is required");
     });
-
-    it("should return 500 when an error occurs", async () => {
+    it("should return 500 when an error occurs checkDuplicate validation", async () => {
       const mockMenu = {
-        name: "Cafe Latte",
+        name: "Cafe Cincau",
         price: 30000,
         description: "Cafe Latte is a coffee-based drink...",
         category: "coffee",
       };
+
+      Menu.findOne.mockImplementation(() => {
+        throw new Error("Database Error");
+      });
+
+      const mockImageUpload = {
+        secure_url: "https://example.com/image.jpg",
+      };
+
+      uploadImage.mockResolvedValue(mockImageUpload);
+      Menu.create.mockRejectedValue(new Error("Database Error"));
+
+      const response = await request(app)
+        .post("/menu")
+        .field("name", mockMenu.name)
+        .field("price", mockMenu.price)
+        .field("description", mockMenu.description)
+        .field("category", mockMenu.category)
+        .attach("image", Buffer.from("mock image"), {
+          filename: "image.jpg",
+          contentType: "image/jpeg",
+        });
+
+      expect(response.status).toBe(500);
+      expect(response.body).toHaveProperty("code", 500);
+      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body).toHaveProperty("message", "Database Error");
+    });
+    it("should return 500 when an error occurs", async () => {
+      const mockMenu = {
+        name: "Cafe Cincau",
+        price: 30000,
+        description: "Cafe Latte is a coffee-based drink...",
+        category: "coffee",
+      };
+
+      Menu.findOne.mockResolvedValue(null);
 
       const mockImageUpload = {
         secure_url: "https://example.com/image.jpg",
@@ -311,6 +453,48 @@ describe("Menu Controllers", () => {
         ],
       });
       const response = await request(app).get("/menu");
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty("code", 200);
+      expect(response.body).toHaveProperty("status", "Success");
+      expect(response.body).toHaveProperty("totalItems", 1);
+      expect(response.body).toHaveProperty("totalPages", 1);
+      expect(response.body).toHaveProperty("currentPage", 1);
+      expect(response.body).toHaveProperty("data", [
+        {
+          mn_id: 1,
+          mn_name: "Cafe Latte",
+          mn_image:
+            "https://res.cloudinary.com/dsxnvgy7a/image/upload/v1730608583/caffelate_wsytuw.jpg",
+          mn_desc:
+            "Cafe Latte is a coffee-based drink prepared by diluting coffee with steamed milk, typically in a 3:1 or 4:1 ratio.",
+          mn_price: 30000,
+          mn_category: "coffee",
+          is_deleted: false,
+          createdAt: "2024-11-15T06:39:29.000Z",
+          updatedAt: "2024-11-15T06:39:29.000Z",
+        },
+      ]);
+    });
+    it("it should return 200 with pagination", async () => {
+      Menu.findAndCountAll.mockResolvedValue({
+        count: 1,
+        rows: [
+          {
+            mn_id: 1,
+            mn_name: "Cafe Latte",
+            mn_image:
+              "https://res.cloudinary.com/dsxnvgy7a/image/upload/v1730608583/caffelate_wsytuw.jpg",
+            mn_desc:
+              "Cafe Latte is a coffee-based drink prepared by diluting coffee with steamed milk, typically in a 3:1 or 4:1 ratio.",
+            mn_price: 30000,
+            mn_category: "coffee",
+            is_deleted: false,
+            createdAt: "2024-11-15T06:39:29.000Z",
+            updatedAt: "2024-11-15T06:39:29.000Z",
+          },
+        ],
+      });
+      const response = await request(app).get("/menu?page=1&limit=5");
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty("code", 200);
       expect(response.body).toHaveProperty("status", "Success");

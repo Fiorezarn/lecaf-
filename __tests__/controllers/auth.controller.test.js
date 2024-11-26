@@ -637,6 +637,27 @@ describe("Auth Controller", () => {
       expect(response.body).toHaveProperty("message", "Password changed!");
     });
 
+    it("should return 400 body validations", async () => {
+      jwt.verify.mockReturnValue({ us_id: 1 });
+      bcrypt.hashSync.mockResolvedValue("Password123!");
+
+      User.update.mockResolvedValue(true);
+      const query = { token: "valid_token" };
+
+      const response = await request(app)
+        .put(`/auth/forgot-password`)
+        .query(query)
+        .send(null);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body).toHaveProperty("code", 400);
+      expect(response.body).toHaveProperty(
+        "message",
+        "Password is a required field."
+      );
+    });
+
     it("should return 500 if an error occurs", async () => {
       jwt.verify.mockReturnValue({ us_id: 1 });
       bcrypt.hashSync.mockResolvedValue("Password123!");

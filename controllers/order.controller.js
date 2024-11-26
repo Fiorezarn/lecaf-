@@ -355,6 +355,7 @@ const getOrderByUserId = async (req, res) => {
                 await Order.update(
                   {
                     or_status_payment: status,
+                    or_payment_info: result,
                   },
                   { where: { or_id: order.or_id } }
                 );
