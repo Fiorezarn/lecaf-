@@ -23,10 +23,6 @@ module.exports = {
         type: Sequelize.JSON,
         allowNull: false,
       },
-      is_deleted: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

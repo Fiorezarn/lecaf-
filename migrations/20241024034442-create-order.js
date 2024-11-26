@@ -59,10 +59,6 @@ module.exports = {
         type: Sequelize.ENUM("ongoing", "delivered", "cancelled"),
         defaultValue: "ongoing",
       },
-      is_deleted: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
-      },
       or_platform_id: {
         type: Sequelize.STRING,
         allowNull: true,

@@ -14,6 +14,10 @@ jest.mock("@/models", () => ({
   },
 }));
 
+jest.mock("@/utils/cloudinary", () => ({
+  uploadImage: jest.fn().mockResolvedValue(mockImageUpload),
+}));
+
 describe("Menu Controllers", () => {
   describe("Get All Menu", () => {
     beforeEach(() => {
@@ -397,10 +401,6 @@ describe("Menu Controllers", () => {
       const mockImageUpload = {
         secure_url: "https://example.com/image.jpg",
       };
-
-      jest.mock("@/utils/cloudinary", () => ({
-        uploadImage: jest.fn().mockResolvedValue(mockImageUpload),
-      }));
 
       jest.spyOn(Menu, "create").mockResolvedValue({
         id: 1,
