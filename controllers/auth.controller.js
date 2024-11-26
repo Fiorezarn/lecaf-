@@ -108,7 +108,7 @@ const Login = async (req, res) => {
       data: users,
     });
   } catch (error) {
-    return errorServerResponse(res, error.message || "Internal server error");
+    return errorServerResponse(res, error.message || "Internal Server Error");
   }
 };
 

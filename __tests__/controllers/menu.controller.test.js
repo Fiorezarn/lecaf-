@@ -14,11 +14,276 @@ jest.mock("@/models", () => ({
   },
 }));
 
-jest.mock("@/utils/cloudinary", () => ({
-  uploadImage: jest.fn().mockResolvedValue(mockImageUpload),
+jest.mock("@/services/cloudinary.service", () => ({
+  uploadImage: jest.fn(),
 }));
 
 describe("Menu Controllers", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+  describe("Create Menu", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it("should return 201 and create new menu", async () => {
+      const mockMenu = {
+        name: "Cafe Latte",
+        price: 30000,
+        description: "Cafe Latte is a coffee-based drink...",
+        category: "coffee",
+      };
+
+      const mockImageUpload = {
+        secure_url: "https://example.com/image.jpg",
+      };
+
+      uploadImage.mockResolvedValue(mockImageUpload);
+
+      Menu.create.mockResolvedValue({
+        id: 1,
+        mn_name: mockMenu.name,
+        mn_price: mockMenu.price,
+        mn_desc: mockMenu.description,
+        mn_category: mockMenu.category,
+        mn_image: mockImageUpload.secure_url,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const response = await request(app)
+        .post("/menu")
+        .field("name", mockMenu.name)
+        .field("price", mockMenu.price)
+        .field("description", mockMenu.description)
+        .field("category", mockMenu.category)
+        .attach("image", Buffer.from("mock image"), {
+          filename: "image.jpg",
+          contentType: "image/jpeg",
+        });
+
+      if (response.status !== 201) {
+        console.error("Response body:", response.body);
+        console.error("Response status:", response.status);
+      }
+
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty("code", 201);
+      expect(response.body).toHaveProperty("status", "success");
+      expect(response.body).toHaveProperty("message", "Success create menu");
+      expect(Menu.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          mn_name: mockMenu.name,
+          mn_price: mockMenu.price,
+          mn_desc: mockMenu.description,
+          mn_category: mockMenu.category,
+          mn_image: mockImageUpload.secure_url,
+        })
+      );
+    });
+
+    it("should return 400 if image is not provided", async () => {
+      const mockMenu = {
+        name: "Cafe Latte",
+        price: 30000,
+        description: "Cafe Latte is a coffee-based drink...",
+        category: "coffee",
+      };
+
+      const response = await request(app)
+        .post("/menu")
+        .field("name", mockMenu.name)
+        .field("price", mockMenu.price)
+        .field("description", mockMenu.description)
+        .field("category", mockMenu.category);
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty("code", 400);
+      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body).toHaveProperty("message", "image is required");
+    });
+
+    it("should return 500 when an error occurs", async () => {
+      const mockMenu = {
+        name: "Cafe Latte",
+        price: 30000,
+        description: "Cafe Latte is a coffee-based drink...",
+        category: "coffee",
+      };
+
+      const mockImageUpload = {
+        secure_url: "https://example.com/image.jpg",
+      };
+
+      uploadImage.mockResolvedValue(mockImageUpload);
+      Menu.create.mockRejectedValue(new Error("Database Error"));
+
+      const response = await request(app)
+        .post("/menu")
+        .field("name", mockMenu.name)
+        .field("price", mockMenu.price)
+        .field("description", mockMenu.description)
+        .field("category", mockMenu.category)
+        .attach("image", Buffer.from("mock image"), {
+          filename: "image.jpg",
+          contentType: "image/jpeg",
+        });
+
+      expect(response.status).toBe(500);
+      expect(response.body).toHaveProperty("code", 500);
+      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body).toHaveProperty("message", "Database Error");
+    });
+  });
+  describe("Update Menu", () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it("should return 200 and update the menu without changing the image", async () => {
+      const mockMenu = {
+        mn_id: 1,
+        mn_name: "Cafe Latte",
+        mn_price: 30000,
+        mn_desc: "Cafe Latte is a coffee-based drink...",
+        mn_category: "coffee",
+        mn_image: "https://example.com/old-image.jpg",
+        is_deleted: 0,
+      };
+
+      const updatedData = {
+        name: "Updated Cafe Latte",
+        price: 35000,
+        description: "Updated description",
+        category: "hot drinks",
+      };
+
+      Menu.findOne.mockResolvedValue(mockMenu);
+      Menu.update.mockResolvedValue([1]);
+
+      const response = await request(app).put("/menu/1").send(updatedData);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty("code", 200);
+      expect(response.body).toHaveProperty("status", "success");
+      expect(response.body).toHaveProperty("message", "Success update menu");
+    });
+
+    it("should return 200 and update the menu including the image", async () => {
+      const mockMenu = {
+        mn_id: 1,
+        mn_name: "Cafe Latte",
+        mn_price: 30000,
+        mn_desc: "Cafe Latte is a coffee-based drink...",
+        mn_category: "coffee",
+        mn_image: "https://example.com/old-image.jpg",
+        is_deleted: 0,
+      };
+
+      const updatedData = {
+        name: "Updated Cafe Latte",
+        price: 35000,
+        description: "Updated description",
+        category: "hot drinks",
+      };
+
+      const mockImageUpload = {
+        secure_url: "https://example.com/new-image.jpg",
+      };
+
+      Menu.findOne.mockResolvedValue(mockMenu);
+      Menu.update.mockResolvedValue([1]);
+      uploadImage.mockResolvedValue(mockImageUpload);
+
+      const response = await request(app)
+        .put("/menu/1")
+        .field("name", updatedData.name)
+        .field("price", updatedData.price)
+        .field("description", updatedData.description)
+        .field("category", updatedData.category)
+        .attach("image", Buffer.from("mock image"), {
+          filename: "new-image.jpg",
+          contentType: "image/jpeg",
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty("code", 200);
+      expect(response.body).toHaveProperty("status", "success");
+      expect(response.body).toHaveProperty("message", "Success update menu");
+      expect(Menu.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          mn_name: updatedData.name,
+          mn_price: updatedData.price,
+          mn_desc: updatedData.description,
+          mn_category: updatedData.category,
+          mn_image: mockImageUpload.secure_url,
+        }),
+        { where: { mn_id: "1" } }
+      );
+    });
+
+    it("should return 404 if the menu is not found", async () => {
+      const updatedData = {
+        name: "Updated Cafe Latte",
+        price: 35000,
+        description: "Updated description",
+        category: "hot drinks",
+      };
+
+      Menu.findOne.mockResolvedValue(null);
+
+      const response = await request(app).put("/menu/999").send(updatedData);
+
+      expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty("code", 404);
+      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body).toHaveProperty(
+        "message",
+        "Menu with id 999 not found!"
+      );
+      expect(Menu.update).not.toHaveBeenCalled();
+    });
+
+    it("should return 500 when an error occurs", async () => {
+      const mockMenu = {
+        mn_id: 1,
+        mn_name: "Cafe Latte",
+        mn_price: 30000,
+        mn_desc: "Cafe Latte is a coffee-based drink...",
+        mn_category: "coffee",
+        mn_image: "https://example.com/old-image.jpg",
+        is_deleted: 0,
+      };
+
+      Menu.findOne.mockResolvedValue(mockMenu);
+      Menu.update.mockRejectedValue(new Error("Database Error"));
+
+      const response = await request(app).put("/menu/1").send({
+        name: "Updated Cafe Latte",
+        price: 35000,
+        description: "Updated description",
+        category: "hot drinks",
+      });
+
+      expect(response.status).toBe(500);
+      expect(response.body).toHaveProperty("code", 500);
+      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body).toHaveProperty("message", "Database Error");
+    });
+  });
   describe("Get All Menu", () => {
     beforeEach(() => {
       jest.clearAllMocks();
@@ -379,117 +644,6 @@ describe("Menu Controllers", () => {
       expect(response.body).toHaveProperty("code", 500);
       expect(response.body).toHaveProperty("status", "error");
       expect(response.body).toHaveProperty("message", "Database Error");
-    });
-  });
-  describe("Create Menu", () => {
-    beforeEach(() => {
-      jest.clearAllMocks();
-    });
-
-    afterEach(() => {
-      jest.restoreAllMocks();
-    });
-
-    it("should return 201 and create new menu", async () => {
-      const mockMenu = {
-        name: "Cafe Latte",
-        price: 30000,
-        description: "Cafe Latte is a coffee-based drink...",
-        category: "coffee",
-      };
-
-      const mockImageUpload = {
-        secure_url: "https://example.com/image.jpg",
-      };
-
-      jest.spyOn(Menu, "create").mockResolvedValue({
-        id: 1,
-        mn_name: mockMenu.name,
-        mn_price: mockMenu.price,
-        mn_desc: mockMenu.description,
-        mn_category: mockMenu.category,
-        mn_image: mockImageUpload.secure_url,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      const response = await request(app)
-        .post("/menu")
-        .field("name", mockMenu.name)
-        .field("price", mockMenu.price)
-        .field("description", mockMenu.description)
-        .field("category", mockMenu.category)
-        .attach("image", Buffer.from("mock image"), "image.jpg");
-
-      expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty("code", 201);
-      expect(response.body).toHaveProperty("status", "success");
-      expect(response.body).toHaveProperty("message", "Success create menu");
-      expect(response.body.data).toEqual(
-        expect.objectContaining({
-          mn_name: mockMenu.name,
-          mn_price: mockMenu.price,
-          mn_desc: mockMenu.description,
-          mn_category: mockMenu.category,
-          mn_image: mockImageUpload.secure_url,
-        })
-      );
-    });
-
-    it("should return 400 if image is not provided", async () => {
-      const mockMenu = {
-        name: "Cafe Latte",
-        price: 30000,
-        description:
-          "Cafe Latte is a coffee-based drink prepared by diluting coffee with steamed milk, typically in a 3:1 or 4:1 ratio.",
-        category: "coffee",
-      };
-
-      const response = await request(app)
-        .post("/menu")
-        .send(mockMenu)
-        .set("Content-Type", "application/json");
-
-      expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty("code", 400);
-      expect(response.body).toHaveProperty("status", "error");
-      expect(response.body).toHaveProperty("message", "Image is required");
-    });
-
-    it("should return 500 when an error occurs", async () => {
-      const mockMenu = {
-        name: "Cafe Latte",
-        price: 30000,
-        description:
-          "Cafe Latte is a coffee-based drink prepared by diluting coffee with steamed milk, typically in a 3:1 or 4:1 ratio.",
-        category: "coffee",
-      };
-
-      jest.spyOn(global, "uploadImage").mockImplementation(() => {
-        throw new Error("Upload error");
-      });
-
-      const response = await request(app)
-        .post("/menu")
-        .field("name", mockMenu.name)
-        .field("price", mockMenu.price)
-        .field("description", mockMenu.description)
-        .field("category", mockMenu.category)
-        .attach("file", "__tests__/fixtures/cafe-latte.jpg");
-
-      expect(response.status).toBe(500);
-      expect(response.body).toHaveProperty("code", 500);
-      expect(response.body).toHaveProperty("status", "error");
-      expect(response.body).toHaveProperty("message", "Upload error");
-    });
-  });
-  describe("Update Menu", () => {
-    beforeEach(() => {
-      jest.clearAllMocks();
-    });
-
-    afterEach(() => {
-      jest.restoreAllMocks();
     });
   });
   describe("Delete Menu", () => {

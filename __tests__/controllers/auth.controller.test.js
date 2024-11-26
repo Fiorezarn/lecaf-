@@ -339,7 +339,6 @@ describe("Auth Controller", () => {
       };
 
       const response = await request(app).post("/auth/login").send(mockBody);
-      console.log(response);
 
       generateToken.mockReturnValue("mockVerificationToken");
       expect(response.status).toBe(401);
@@ -541,7 +540,6 @@ describe("Auth Controller", () => {
       const response = await request(app)
         .post("/auth/send-forgot-password")
         .send(mockBody);
-      console.log(response, "ini response");
 
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty("status", "error");

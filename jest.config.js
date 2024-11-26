@@ -6,6 +6,7 @@ module.exports = {
   collectCoverage: true,
   collectCoverageFrom: [
     "helpers/**/*.js",
+    "utils/**/*.js",
     "services/**/*.js",
     "validations/**/*.js",
     "controllers/**/*.js",

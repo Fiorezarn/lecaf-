@@ -100,11 +100,7 @@ const createSnapTransaction = async (req, res) => {
     });
 
     if (!order) {
-      return res.status(404).send({
-        status: "failed",
-        code: 404,
-        message: "Order not found",
-      });
+      return errorClientResponse(res, "Order not found", 404);
     }
     if (order.or_platform_id === null && order.or_platform_token === null) {
       const transactionDetails = {
@@ -139,7 +135,6 @@ const createSnapTransaction = async (req, res) => {
       200
     );
   } catch (error) {
-    console.log(error);
     return errorServerResponse(res, error.message);
   }
 };
@@ -151,10 +146,10 @@ const verifyTransaction = async (req, res) => {
     let order = await Order.findOne({
       where: { or_platform_id: transaction.order_id },
     });
-    let shipping = order.or_type_order === "Dine-in" ? "delivered" : "ongoing";
     if (!order) {
-      return errorClientResponse(res, "Order not found", 400);
+      return errorClientResponse(res, "Order not found", 404);
     }
+    let shipping = order.or_type_order === "Dine-in" ? "delivered" : "ongoing";
     let status = "pending";
     if (
       transaction.transaction_status === "settlement" ||
@@ -167,12 +162,11 @@ const verifyTransaction = async (req, res) => {
       shipping = "cancelled";
     }
     if (transaction.transaction_status === "expire") status = "expired";
-
     if (
       order.or_status_payment !== "settlement" ||
       order.or_status_shipping !== "delivered"
     ) {
-      await order.update(
+      await Order.update(
         {
           or_status_payment: status,
           or_status_shipping: shipping,
@@ -350,14 +344,12 @@ const getOrderByUserId = async (req, res) => {
             const result = await midtransVerifyTransaction(
               order.or_platform_id
             );
-            console.log(result, "ini result");
 
             let status = "pending";
             if (
               result.transaction_status === "settlement" ||
               result.transaction_status === "success"
             ) {
-              console.log(order, "ini yang settlement");
               status = "settlement";
               if (order.or_status_payment === "pending") {
                 await Order.update(
@@ -406,11 +398,7 @@ const cancelTransaction = async (req, res) => {
   try {
     let order = await Order.findOne({ where: { or_id: id } });
     if (!order) {
-      return res.status(404).send({
-        status: "failed",
-        code: 404,
-        message: "Order not found",
-      });
+      return errorClientResponse(res, "Order not found", 404);
     }
 
     if (order.or_platform_id === null && order.or_platform_token === null) {

@@ -15,7 +15,7 @@ router.get("/", getAllOrder);
 router.post("/payments/:id", createSnapTransaction);
 router.get("/:id", getOrderByUserId);
 router.post("/", bodyValidation, createOrder);
-router.post("/verify-payment/:orderId", verifyTransaction);
+router.get("/verify-payment/:orderId", verifyTransaction);
 router.post("/cancel-payment/:id", cancelTransaction);
 router.patch("/:id", updateStatus);
 

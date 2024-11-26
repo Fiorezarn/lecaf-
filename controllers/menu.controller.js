@@ -75,7 +75,7 @@ const createMenu = async (req, res) => {
   try {
     const { name, price, description, category } = req.body;
     if (!req?.file) {
-      return res.status(400).json({ error: "image is required" });
+      return errorClientResponse(res, "image is required", 400);
     }
     const result = await uploadImage(req?.file);
 
@@ -102,7 +102,7 @@ const updateMenu = async (req, res) => {
       where: { [Op.and]: [{ mn_id: id }, { is_deleted: 0 }] },
     });
     if (!menu) {
-      return errorClientResponse(res, `Menu with id ${id} not found!`);
+      return errorClientResponse(res, `Menu with id ${id} not found!`, 404);
     }
     if (req?.file) {
       const result = await uploadImage(req?.file);
