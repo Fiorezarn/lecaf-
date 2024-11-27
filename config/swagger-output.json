@@ -313,7 +313,7 @@
                   },
                   "description": {
                     "type": "string",
-                    "example": "plerkudanil"
+                    "example": "lorem ipsum"
                   },
                   "image": {
                     "type": "string",
@@ -486,7 +486,7 @@
         }
       }
     },
-    "/cart/35": {
+    "/cart/100": {
       "get": {
         "tags": [
           "Cart"
@@ -580,14 +580,39 @@
         }
       }
     },
+    "/cart/count/1": {
+      "get": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Count Cart by user id",
+        "description": "Count Cart by user id",
+        "operationId": "countCartByUserId",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/order": {
       "get": {
         "tags": [
           "Order"
         ],
-        "summary": "Get Order by user id",
-        "description": "Get Order by user id",
-        "operationId": "getOrderByUserId",
+        "summary": "Get All Order Delivery",
+        "description": "Get All Order Delivery",
+        "operationId": "getAllOrderDelivery",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "ongoing"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -682,14 +707,24 @@
         }
       }
     },
-    "/order/delivery": {
+    "/order/2": {
       "get": {
         "tags": [
           "Order"
         ],
-        "summary": "Get All Order Delivery",
-        "description": "Get All Order Delivery",
-        "operationId": "getAllOrderDelivery",
+        "summary": "Get Order by user id",
+        "description": "Get Order by user id",
+        "operationId": "getOrderByUserId",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "pending"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -769,6 +804,43 @@
         }
       }
     },
+    "/order/999": {
+      "patch": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Update Status Shipping",
+        "description": "Update Status Shipping",
+        "operationId": "updateStatusShipping",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "example": "delivered"
+                  }
+                }
+              },
+              "examples": {
+                "Update Status Shipping": {
+                  "value": {
+                    "status": "delivered"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/maps/create-polyline": {
       "post": {
         "tags": [
@@ -784,14 +856,14 @@
         }
       }
     },
-    "/user": {
+    "/dashboard": {
       "get": {
         "tags": [
-          "User"
+          "Dashboard"
         ],
-        "summary": "Get All User",
-        "description": "Get All User",
-        "operationId": "getAllUser",
+        "summary": "Count Data",
+        "description": "Count Data",
+        "operationId": "countData",
         "responses": {
           "200": {
             "description": ""
@@ -817,7 +889,7 @@
       "name": "Maps"
     },
     {
-      "name": "User"
+      "name": "Dashboard"
     }
   ]
 }
