@@ -3,19 +3,26 @@
   "info": {
     "title": "Le Café",
     "version": "1.0.0",
-    "contact": {}
+    "description": "Welcome to the Le Café API documentation.\n\nThis API serves as the backbone for Le Café, a modern coffee shop platform offering both dine-in and delivery services. Key Features:\n\n- User Authentication: Secure registration and login processes\n- Menu Management: Comprehensive CRUD operations for menu items\n- Order Processing: Handle order creation, updates, and tracking\n- Payment Integration: Seamless integration with payment gateways\n- Delivery Management: Route optimization and real-time tracking\n\nThis API is designed for developers integrating with the Le Café platform, including frontend applications, mobile apps, and third-party services.\n\nBuilt on RESTful principles, the API uses standard HTTP methods and returns responses in JSON format. Authentication is handled via JWT tokens.\n\nTo use this documentation:\n\n1. Explore the available endpoints in the 'Paths' section\n2. Check the 'Schemas' for data structure details\n3. Use the 'Try it out' feature to test endpoints directly from the browser\n\nFor any questions or support, please contact our development team.",
+    "contact": {
+      "name": "Le Café Support",
+      "email": "lecafeeeeeeee@gmail.com"
+    }
   },
   "servers": [
     {
-      "url": "http://localhost:3000"
+      "url": "http://localhost:3000",
+      "description": "Development Server"
+    },
+    {
+      "url": "https://lecafe-be.onrender.com",
+      "description": "Production Server"
     }
   ],
   "paths": {
     "/auth/register": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Register User",
         "description": "Register User",
         "operationId": "registerUser",
@@ -70,9 +77,7 @@
     },
     "/auth/login": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Login",
         "description": "Login",
         "operationId": "login",
@@ -112,9 +117,7 @@
     },
     "/auth/send-email": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Send Email Verif Manual",
         "description": "Send Email Verif Manual",
         "operationId": "sendEmailVerifManual",
@@ -149,9 +152,7 @@
     },
     "/auth/send-reset-password": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Send Forgot Password",
         "description": "Send Forgot Password",
         "operationId": "sendForgotPassword",
@@ -186,9 +187,7 @@
     },
     "/auth/forgot-password": {
       "put": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Reset Password",
         "description": "Reset Password",
         "operationId": "resetPassword",
@@ -233,9 +232,7 @@
     },
     "/auth/logout": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Logout",
         "description": "Logout",
         "operationId": "logout",
@@ -248,9 +245,7 @@
     },
     "/menu": {
       "get": {
-        "tags": [
-          "Menu"
-        ],
+        "tags": ["Menu"],
         "summary": "Get All Menu",
         "description": "Get All Menu",
         "operationId": "getAllMenu",
@@ -295,9 +290,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Menu"
-        ],
+        "tags": ["Menu"],
         "summary": "Add Menu",
         "description": "Add Menu",
         "operationId": "addMenu",
@@ -341,9 +334,7 @@
     },
     "/menu/recommended": {
       "get": {
-        "tags": [
-          "Menu"
-        ],
+        "tags": ["Menu"],
         "summary": "Get Menu Recommended",
         "description": "Get Menu Recommended",
         "operationId": "getMenuRecommended",
@@ -356,9 +347,7 @@
     },
     "/menu/11": {
       "get": {
-        "tags": [
-          "Menu"
-        ],
+        "tags": ["Menu"],
         "summary": "Get Menu By ID",
         "description": "Get Menu By ID",
         "operationId": "getMenuById",
@@ -371,9 +360,7 @@
     },
     "/menu/1": {
       "put": {
-        "tags": [
-          "Menu"
-        ],
+        "tags": ["Menu"],
         "summary": "Update Menu",
         "description": "Update Menu",
         "operationId": "updateMenu",
@@ -415,9 +402,7 @@
         }
       },
       "patch": {
-        "tags": [
-          "Menu"
-        ],
+        "tags": ["Menu"],
         "summary": "Delete Menu",
         "description": "Delete Menu",
         "operationId": "deleteMenu",
@@ -441,9 +426,7 @@
     },
     "/cart/add-cart": {
       "post": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "summary": "Add To Cart",
         "description": "Add To Cart",
         "operationId": "addToCart",
@@ -488,9 +471,7 @@
     },
     "/cart/100": {
       "get": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "summary": "Find cart by id user",
         "description": "Find cart by id user",
         "operationId": "findCartByIdUser",
@@ -503,9 +484,7 @@
     },
     "/cart": {
       "delete": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "summary": "Delete Cart",
         "description": "Delete Cart",
         "operationId": "deleteCart",
@@ -545,9 +524,7 @@
     },
     "/cart/39": {
       "patch": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "summary": "Update Quantity",
         "description": "Update Quantity",
         "operationId": "updateQuantity",
@@ -582,9 +559,7 @@
     },
     "/cart/count/1": {
       "get": {
-        "tags": [
-          "Cart"
-        ],
+        "tags": ["Cart"],
         "summary": "Count Cart by user id",
         "description": "Count Cart by user id",
         "operationId": "countCartByUserId",
@@ -597,9 +572,7 @@
     },
     "/order": {
       "get": {
-        "tags": [
-          "Order"
-        ],
+        "tags": ["Order"],
         "summary": "Get All Order Delivery",
         "description": "Get All Order Delivery",
         "operationId": "getAllOrderDelivery",
@@ -620,9 +593,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Order"
-        ],
+        "tags": ["Order"],
         "summary": "Create Order",
         "description": "Create Order",
         "operationId": "createOrder",
@@ -709,9 +680,7 @@
     },
     "/order/2": {
       "get": {
-        "tags": [
-          "Order"
-        ],
+        "tags": ["Order"],
         "summary": "Get Order by user id",
         "description": "Get Order by user id",
         "operationId": "getOrderByUserId",
@@ -734,9 +703,7 @@
     },
     "/order/payments/1": {
       "post": {
-        "tags": [
-          "Order"
-        ],
+        "tags": ["Order"],
         "summary": "Snap Midtrans",
         "description": "Snap Midtrans",
         "operationId": "snapMidtrans",
@@ -776,9 +743,7 @@
     },
     "/order/verify-payment/LeCafe-1731034329555": {
       "post": {
-        "tags": [
-          "Order"
-        ],
+        "tags": ["Order"],
         "summary": "Verify Transactions",
         "description": "Verify Transactions",
         "operationId": "verifyTransactions",
@@ -791,9 +756,7 @@
     },
     "/order/cancel-payment/11": {
       "post": {
-        "tags": [
-          "Order"
-        ],
+        "tags": ["Order"],
         "summary": "Cancel Transaction",
         "description": "Cancel Transaction",
         "operationId": "cancelTransaction",
@@ -806,9 +769,7 @@
     },
     "/order/999": {
       "patch": {
-        "tags": [
-          "Order"
-        ],
+        "tags": ["Order"],
         "summary": "Update Status Shipping",
         "description": "Update Status Shipping",
         "operationId": "updateStatusShipping",
@@ -843,9 +804,7 @@
     },
     "/maps/create-polyline": {
       "post": {
-        "tags": [
-          "Maps"
-        ],
+        "tags": ["Maps"],
         "summary": "Get Polyline",
         "description": "Get Polyline",
         "operationId": "getPolyline",
@@ -858,9 +817,7 @@
     },
     "/dashboard": {
       "get": {
-        "tags": [
-          "Dashboard"
-        ],
+        "tags": ["Dashboard"],
         "summary": "Count Data",
         "description": "Count Data",
         "operationId": "countData",
