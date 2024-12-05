@@ -5,6 +5,7 @@ Le Café Backend is the server-side component of the Le Café coffee shop orderi
 ## 📋 Table of Contents
 - [🚀 Features](#-features)
 - [📚 API Documentation](#-api-documentation)
+- [🧪 Unit Testing](#-unit-testing)
 - [🔐 Environment Variables](#-environment-variables)
 - [⚙️ Installation](#️-installation)
 - [🔗 Frontend Repository](#-frontend-repository)
